@@ -10,22 +10,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func BindAndValidateRequest(ctx echo.Context, input interface{}) error {
-	if err := ctx.Bind(input); err != nil {
+func BindAndValidateRequest(ctx echo.Context, request interface{}) error {
+	if err := ctx.Bind(request); err != nil {
 		logger.Error(ctx, "Failed to bind request input", err, logrus.Fields{
 			"path":   ctx.Path(),
 			"method": ctx.Request().Method,
 		})
-		return errors.Wrap(err, errors.BadRequest, "Failed to parse request body", 400)
+		return errors.Wrap(err, errors.BadRequest, "Failed to parse request", 400)
 	}
 
-	if err := ctx.Validate(input); err != nil {
-		logger.Error(ctx, "Input validation failed", err, logrus.Fields{
-			"path":       ctx.Path(),
-			"method":     ctx.Request().Method,
-			"input_type": fmt.Sprintf("%T", input),
+	if err := ctx.Validate(request); err != nil {
+		logger.Error(ctx, "Request validation failed", err, logrus.Fields{
+			"path":         ctx.Path(),
+			"method":       ctx.Request().Method,
+			"request_type": fmt.Sprintf("%T", request),
 		})
-		return errors.Wrap(err, errors.ValidationErr, "Input validation failed", 400)
+		return errors.Wrap(err, errors.ValidationErr, "Request validation failed", 400)
 	}
 
 	return nil
