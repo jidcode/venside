@@ -11,13 +11,15 @@ func AuthRoutes(e *echo.Echo, controller auth.IAuthController, service auth.IAut
 	// Public routes
 	api.GET("/csrf-token", controller.GetCSRFToken)
 	api.POST("/register", controller.Register)
-	api.POST("/login", controller.Login)
 
-	// Protected routes
+	// Login needs CSRF protection
+	loginGroup := api.Group("")
+	loginGroup.Use(auth.CSRFMiddleware(service))
+	loginGroup.POST("/login", controller.Login)
+
+	// Protected routes (GET - no CSRF required)
 	protected := api.Group("")
 	protected.Use(auth.AuthMiddleware(service))
-	protected.Use(auth.CSRFMiddleware(service))
-
 	protected.GET("/user-profile", controller.GetUserProfile)
 	protected.GET("/check-token", controller.CheckTokenExpiration)
 }

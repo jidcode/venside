@@ -17,7 +17,7 @@ type Inventory struct {
 
 type InventoryRequest struct {
 	Name     string `json:"name" validate:"required,min=1,max=100"`
-	Currency string `json:"currency" validate:"required,min=1,max=20"`
+	Currency string `json:"currency" validate:"required,min=1,max=200"`
 }
 
 type InventoryResponse struct {
