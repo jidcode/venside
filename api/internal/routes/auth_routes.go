@@ -5,7 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func AuthRoutes(e *echo.Echo, controller auth.IAuthController, service auth.IAuthService) {
+func AuthRoutes(e *echo.Echo, controller auth.AuthController, service auth.AuthService) {
 	api := e.Group("/api/auth")
 
 	// Public routes

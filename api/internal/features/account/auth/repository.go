@@ -7,7 +7,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type IAuthRepository interface {
+type AuthRepository interface {
 	CreateUser(user *models.User) error
 	GetUserByEmail(email string) (models.User, error)
 	GetUserByID(id uuid.UUID) (models.User, error)
@@ -18,7 +18,7 @@ type Repository struct {
 	db *sqlx.DB
 }
 
-func NewRepository(db *sqlx.DB) IAuthRepository {
+func NewRepository(db *sqlx.DB) AuthRepository {
 	return &Repository{db: db}
 }
 

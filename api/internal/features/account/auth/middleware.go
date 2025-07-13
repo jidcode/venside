@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func AuthMiddleware(service IAuthService) echo.MiddlewareFunc {
+func AuthMiddleware(service AuthService) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			authHeader := ctx.Request().Header.Get("Authorization")
@@ -33,7 +33,7 @@ func AuthMiddleware(service IAuthService) echo.MiddlewareFunc {
 	}
 }
 
-func CSRFMiddleware(service IAuthService) echo.MiddlewareFunc {
+func CSRFMiddleware(service AuthService) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			// Only check CSRF for state-changing operations

@@ -6,15 +6,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type IInventoryRepository interface {
+type InventoryRepository interface {
 	ListInventories(userId uuid.UUID) ([]models.Inventory, error)
-	GetInventory(inventoryId uuid.UUID) (models.Inventory, error)
-	CreateInventory(newInventory *models.Inventory) error
-	UpdateInventory(updatedInventory *models.Inventory) error
+	GetInventory(inventoryId uuid.UUID) (*models.Inventory, error)
+	CreateInventory(inventory *models.Inventory, currency *models.Currency) error
+	UpdateInventory(inventory *models.Inventory, currency *models.Currency) error
 	DeleteInventory(inventoryId uuid.UUID) error
 }
 
-type IInventoriesController interface {
+type InventoryController interface {
 	ListInventories(ctx echo.Context) error
 	GetInventory(ctx echo.Context) error
 	CreateInventory(ctx echo.Context) error

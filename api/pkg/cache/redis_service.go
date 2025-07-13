@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"time"
@@ -11,33 +10,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func NewRedisClient(redisURL string) *RedisClient {
-	opt, err := redis.ParseURL(redisURL)
-	if err != nil {
-		logger.Fatal("Failed to parse Redis URL", logrus.Fields{
-			"error":     err.Error(),
-			"redis_url": redisURL,
-		})
-	}
-
-	client := redis.NewClient(opt)
-
-	if err := client.Ping(context.Background()).Err(); err != nil {
-		logger.Fatal("Failed to connect to Redis", logrus.Fields{
-			"error":     err.Error(),
-			"redis_url": redisURL,
-		})
-	}
-
-	logger.Info("Redis connected successfully", logrus.Fields{
-		"redis_url": redisURL,
-		"driver":    "go-redis",
-	})
-
-	return &RedisClient{
-		client: client,
-		ctx:    context.Background(),
-	}
+type RedisService interface {
+	Get(key string, dest interface{}) error
+	Set(key string, value interface{}, expiration time.Duration) error
+	Delete(key string) error
+	Close() error
 }
 
 func (r *RedisClient) Get(key string, dest interface{}) error {

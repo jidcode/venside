@@ -17,6 +17,7 @@ const (
 	ConflictErr   ErrorType = "CONFLICT"
 	InternalErr   ErrorType = "INTERNAL_ERROR"
 	DatabaseErr   ErrorType = "DATABASE_ERROR"
+	CacheErr      ErrorType = "DATABASE_ERROR"
 )
 
 // AppError represents application errors
@@ -144,4 +145,8 @@ func ConflictError(message string) *AppError {
 
 func InternalError(err error, message string) *AppError {
 	return Wrap(err, InternalErr, message, 500)
+}
+
+func CacheError(err error, message string) *AppError {
+	return Wrap(err, CacheErr, message, 500)
 }

@@ -6,7 +6,6 @@ import (
 
 	"github.com/app/venside/internal/models"
 	"github.com/app/venside/pkg/errors"
-
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -29,7 +28,7 @@ func (v *InventoryValidator) ValidateInventory(inventory *models.Inventory) erro
 	}
 
 	if exists {
-		errorMessages = append(errorMessages, "Inventory name already exists. Try another name.")
+		errorMessages = append(errorMessages, "Name already exists.")
 	}
 
 	if len(errorMessages) > 0 {

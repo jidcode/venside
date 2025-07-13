@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func NewServer(db *sqlx.DB, cache cache.IRedisCache, config *config.Variables) *echo.Echo {
+func NewServer(db *sqlx.DB, cache cache.RedisService, config *config.Variables) *echo.Echo {
 	e := echo.New()
 
 	e.Validator = &utils.AppValidator{Validator: validator.New()}

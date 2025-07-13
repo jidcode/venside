@@ -10,18 +10,18 @@ import (
 	"github.com/app/venside/internal/shared/utils"
 	"github.com/app/venside/pkg/errors"
 	"github.com/app/venside/pkg/logger"
-
 	"github.com/golang-jwt/jwt"
+
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
 
 type Controller struct {
-	service   IAuthService
+	service   AuthService
 	validator *AuthValidator
 }
 
-type IAuthController interface {
+type AuthController interface {
 	Register(ctx echo.Context) error
 	Login(ctx echo.Context) error
 	GetUserProfile(ctx echo.Context) error
@@ -29,7 +29,7 @@ type IAuthController interface {
 	CheckTokenExpiration(ctx echo.Context) error
 }
 
-func NewController(service IAuthService, validator *AuthValidator) IAuthController {
+func NewController(service AuthService, validator *AuthValidator) AuthController {
 	return &Controller{
 		service:   service,
 		validator: validator,

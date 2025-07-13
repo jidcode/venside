@@ -1,21 +1,40 @@
 package server
 
 import (
+	"log"
+
 	"github.com/app/venside/config"
 	"github.com/app/venside/internal/features/account/auth"
 	"github.com/app/venside/internal/features/account/inventories"
+	"github.com/app/venside/internal/features/application/products"
+	"github.com/app/venside/internal/features/application/warehouses"
 	"github.com/app/venside/internal/routes"
 	"github.com/app/venside/pkg/cache"
+	"github.com/app/venside/pkg/cloudflare"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 )
 
-func ConfigureRoutes(e *echo.Echo, db *sqlx.DB, cache cache.IRedisCache, config *config.Variables) {
+func ConfigureRoutes(e *echo.Echo, db *sqlx.DB, cache cache.RedisService, config *config.Variables) {
 	// Health check endpoint
 	e.GET("/health", func(ctx echo.Context) error {
-		return ctx.JSON(200, map[string]string{"status": "OK!"})
+		return ctx.JSON(200, map[string]string{"status": "OK✅"})
 	})
+
+	// Initialize R2 client
+	r2Config := cloudflare.R2Config{
+		AccountID:       config.R2AccountID,
+		AccessKeyID:     config.R2AccessKeyID,
+		SecretAccessKey: config.R2SecretAccessKey,
+		BucketName:      config.R2BucketName,
+		PublicURL:       config.R2PublicURL,
+	}
+
+	r2Client, err := cloudflare.NewR2Client(r2Config)
+	if err != nil {
+		log.Fatalf("Failed to initialize R2 client: %v", err)
+	}
 
 	// Initialize auth routing components
 	authRepo := auth.NewRepository(db)
@@ -29,4 +48,16 @@ func ConfigureRoutes(e *echo.Echo, db *sqlx.DB, cache cache.IRedisCache, config 
 	inventoryValidator := inventories.NewValidator(db)
 	inventoryController := inventories.NewController(inventoryRepo, inventoryValidator)
 	routes.InventoryRoutes(e, inventoryController, authService)
+
+	// Warehouse routes
+	warehouseRepo := warehouses.NewRepository(db, cache)
+	warehouseValidator := warehouses.NewValidator(db)
+	warehouseController := warehouses.NewController(warehouseRepo, warehouseValidator)
+	routes.WarehouseRoutes(e, warehouseController, authService)
+
+	// Product routes
+	productRepo := products.NewRepository(db, cache)
+	productValidator := products.NewValidator(db)
+	productController := products.NewController(productRepo, productValidator, r2Client)
+	routes.ProductRoutes(e, productController, authService)
 }

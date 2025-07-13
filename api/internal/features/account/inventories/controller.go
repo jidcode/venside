@@ -14,11 +14,11 @@ import (
 )
 
 type Controller struct {
-	repo      IInventoryRepository
+	repo      InventoryRepository
 	validator *InventoryValidator
 }
 
-func NewController(repo IInventoryRepository, validator *InventoryValidator) IInventoriesController {
+func NewController(repo InventoryRepository, validator *InventoryValidator) InventoryController {
 	return &Controller{
 		repo:      repo,
 		validator: validator,
@@ -40,7 +40,13 @@ func (c *Controller) ListInventories(ctx echo.Context) error {
 
 	response := make([]models.InventoryResponse, len(inventories))
 	for i, inventory := range inventories {
-		response[i] = *mapper.ToInventoryResponse(&inventory)
+		response[i] = models.InventoryResponse{
+			ID:        inventory.ID,
+			Name:      inventory.Name,
+			UserID:    inventory.UserID,
+			CreatedAt: inventory.CreatedAt,
+			UpdatedAt: inventory.UpdatedAt,
+		}
 	}
 
 	return ctx.JSON(http.StatusOK, response)
@@ -54,12 +60,12 @@ func (c *Controller) GetInventory(ctx echo.Context) error {
 
 	inventory, err := c.repo.GetInventory(inventoryID)
 	if err != nil {
-		return logger.Error(ctx, "Failed to retrieve account", err, logrus.Fields{
+		return logger.Error(ctx, "Failed to retrieve inventory", err, logrus.Fields{
 			"inventory_id": inventoryID,
 		})
 	}
 
-	response := mapper.ToInventoryResponse(&inventory)
+	response := mapper.ToInventoryResponse(inventory, inventory.Currency)
 	return ctx.JSON(http.StatusOK, response)
 }
 
@@ -74,20 +80,18 @@ func (c *Controller) CreateInventory(ctx echo.Context) error {
 		return err
 	}
 
-	mapper.SanitizeInventoryRequest(&req)
-
-	newInventory := mapper.ToCreateInventory(&req, user.ID)
-	if err := c.validator.ValidateInventory(newInventory); err != nil {
+	inventory, currency := mapper.ToCreateInventory(&req, user.ID)
+	if err := c.validator.ValidateInventory(inventory); err != nil {
 		return err
 	}
 
-	if err := c.repo.CreateInventory(newInventory); err != nil {
+	if err := c.repo.CreateInventory(inventory, currency); err != nil {
 		return logger.Error(ctx, "Failed to create inventory", err, logrus.Fields{
-			"inventory_name": newInventory.Name,
+			"inventory_name": inventory.Name,
 		})
 	}
 
-	response := mapper.ToInventoryResponse(newInventory)
+	response := mapper.ToInventoryResponse(inventory, currency)
 	return ctx.JSON(http.StatusCreated, response)
 }
 
@@ -102,8 +106,6 @@ func (c *Controller) UpdateInventory(ctx echo.Context) error {
 		return err
 	}
 
-	mapper.SanitizeInventoryRequest(&req)
-
 	existingInventory, err := c.repo.GetInventory(inventoryID)
 	if err != nil {
 		return logger.Error(ctx, "Inventory not found", err, logrus.Fields{
@@ -111,18 +113,18 @@ func (c *Controller) UpdateInventory(ctx echo.Context) error {
 		})
 	}
 
-	updatedInventory := mapper.ToEditInventory(&req, &existingInventory)
+	updatedInventory, updatedCurrency := mapper.ToEditInventory(&req, existingInventory, existingInventory.Currency)
 	if err := c.validator.ValidateInventory(updatedInventory); err != nil {
 		return err
 	}
 
-	if err := c.repo.UpdateInventory(updatedInventory); err != nil {
+	if err := c.repo.UpdateInventory(updatedInventory, updatedCurrency); err != nil {
 		return logger.Error(ctx, "Failed to update inventory", err, logrus.Fields{
 			"inventory_id": inventoryID,
 		})
 	}
 
-	response := mapper.ToInventoryResponse(updatedInventory)
+	response := mapper.ToInventoryResponse(updatedInventory, updatedCurrency)
 	return ctx.JSON(http.StatusOK, response)
 }
 

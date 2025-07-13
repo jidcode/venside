@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type IAuthService interface {
+type AuthService interface {
 	RegisterUser(req *models.RegisterRequest) (*models.User, error)
 	LoginUser(req *models.LoginRequest) (*models.AuthResponse, error)
 	ValidateToken(tokenString string) (*jwt.Token, error)
@@ -25,13 +25,13 @@ type IAuthService interface {
 }
 
 type Service struct {
-	repo       IAuthRepository
+	repo       AuthRepository
 	jwtSecret  string
 	csrfTokens map[string]time.Time
 	csrfMutex  sync.RWMutex
 }
 
-func NewService(repo IAuthRepository, jwtSecret string) IAuthService {
+func NewService(repo AuthRepository, jwtSecret string) AuthService {
 	service := &Service{
 		repo:       repo,
 		jwtSecret:  jwtSecret,

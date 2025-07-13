@@ -16,14 +16,14 @@ func NewValidator(db *sqlx.DB) *AuthValidator {
 	return &AuthValidator{db: db}
 }
 
-func (av *AuthValidator) ValidateRegister(req *models.RegisterRequest) error {
+func (v *AuthValidator) ValidateRegister(req *models.RegisterRequest) error {
 	var errorMessages []string
 
 	req.Username = strings.ToLower(strings.TrimSpace(req.Username))
 	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
 
 	// Check username uniqueness
-	usernameExists, err := av.usernameExists(req.Username)
+	usernameExists, err := v.usernameExists(req.Username)
 	if err != nil {
 		return errors.DatabaseError(err, "Error validating username")
 	}
@@ -32,7 +32,7 @@ func (av *AuthValidator) ValidateRegister(req *models.RegisterRequest) error {
 	}
 
 	// Check email uniqueness
-	emailExists, err := av.emailExists(req.Email)
+	emailExists, err := v.emailExists(req.Email)
 	if err != nil {
 		return errors.DatabaseError(err, "Error validating email")
 	}
@@ -52,7 +52,7 @@ func (av *AuthValidator) ValidateRegister(req *models.RegisterRequest) error {
 	return nil
 }
 
-func (av *AuthValidator) ValidateLogin(req *models.LoginRequest) error {
+func (v *AuthValidator) ValidateLogin(req *models.LoginRequest) error {
 	var errorMessages []string
 
 	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
@@ -71,11 +71,11 @@ func (av *AuthValidator) ValidateLogin(req *models.LoginRequest) error {
 	return nil
 }
 
-func (av *AuthValidator) usernameExists(username string) (bool, error) {
+func (v *AuthValidator) usernameExists(username string) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`
 
-	err := av.db.Get(&exists, query, username)
+	err := v.db.Get(&exists, query, username)
 	if err != nil {
 		return false, err
 	}
@@ -83,11 +83,11 @@ func (av *AuthValidator) usernameExists(username string) (bool, error) {
 	return exists, nil
 }
 
-func (av *AuthValidator) emailExists(email string) (bool, error) {
+func (v *AuthValidator) emailExists(email string) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)`
 
-	err := av.db.Get(&exists, query, email)
+	err := v.db.Get(&exists, query, email)
 	if err != nil {
 		return false, err
 	}
