@@ -90,31 +90,35 @@ function AddInventoryForm({ onSuccess }: InventoryModalProps) {
   } = useForm<InventoryRequest>({
     resolver: zodResolver(inventorySchema),
     defaultValues: {
-      currency: "USD:en-US:United States Dollar",
+      name: "",
+      currency: {
+        code: "USD",
+        locale: "en-US",
+        name: "United States Dollar",
+      },
     },
   });
 
   const currentCurrency = watch("currency");
 
-  const handleCurrencySelect = (value: string) => {
-    setValue("currency", value, { shouldValidate: true });
+  // Set currency as an object
+  const handleCurrencySelect = (currencyObj: {
+    code: string;
+    locale: string;
+    name: string;
+  }) => {
+    setValue("currency", currencyObj, { shouldValidate: true });
     setIsPopoverOpen(false);
   };
 
   // Get display value for selected currency
   const getSelectedCurrency = () => {
     if (!currentCurrency) return "Select currency";
-
-    const currency = CURRENCIES.find(
-      (c) => `${c.code}:${c.locale}:${c.name}` === currentCurrency
-    );
-
-    return currency ? `${currency.code} - ${currency.name}` : "Select currency";
+    return `${currentCurrency.code} - ${currentCurrency.name}`;
   };
 
   const action: SubmitHandler<InventoryRequest> = async (formData) => {
     setErrorResponse(null);
-    console.log(formData);
     try {
       const response = await createInventoryAction(formData);
       if (response.success) {
@@ -126,7 +130,6 @@ function AddInventoryForm({ onSuccess }: InventoryModalProps) {
         );
       }
     } catch (error) {
-      console.error("Create inventory error:", error);
       setErrorResponse(
         error instanceof Error ? error.message : "An unexpected error occurred"
       );
@@ -143,7 +146,7 @@ function AddInventoryForm({ onSuccess }: InventoryModalProps) {
 
           <div className="space-y-2">
             <Label htmlFor="name" className="tracking-wide">
-              Inventory Name
+              Business Name
             </Label>
             <div className="relative">
               <Input
@@ -180,24 +183,28 @@ function AddInventoryForm({ onSuccess }: InventoryModalProps) {
                     <ChevronsUpDown className="ml-2 size-5 text-neutral" />
                   </Button>
                 </PopoverTrigger>
+
                 <PopoverContent className="p-0" align="start">
                   <Command>
                     <CommandInput
                       placeholder="Search currencies..."
-                      className="h-9"
+                      className="h-10"
                     />
                     <CommandList>
                       <CommandEmpty>No currency found.</CommandEmpty>
                       <CommandGroup>
                         {CURRENCIES.map((currency) => {
-                          const value = `${currency.code}:${currency.locale}:${currency.name}`;
-                          const isSelected = currentCurrency === value;
+                          const isSelected =
+                            currentCurrency &&
+                            currentCurrency.code === currency.code &&
+                            currentCurrency.locale === currency.locale &&
+                            currentCurrency.name === currency.name;
 
                           return (
                             <CommandItem
-                              key={currency.code}
+                              key={currency.code + currency.locale}
                               value={`${currency.code} ${currency.name}`}
-                              onSelect={() => handleCurrencySelect(value)}
+                              onSelect={() => handleCurrencySelect(currency)}
                               className="flex items-center gap-2 cursor-pointer"
                             >
                               <Check

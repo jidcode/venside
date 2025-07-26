@@ -5,10 +5,7 @@ import { useAuthStore } from "@/core/stores/auth-store";
 import DashboardContent from "./_components/dashboard-content";
 import NewInventoryModal from "./_components/new-inventory";
 import useInventoryStore from "@/core/stores/inventory-store";
-import {
-  CustomLoader,
-  FullPageLoader,
-} from "@/core/components/elements/loader";
+import { FullPageLoader } from "@/core/components/elements/loader";
 import { InventoryState } from "@/core/schema/types";
 
 export default function DashboardPage() {

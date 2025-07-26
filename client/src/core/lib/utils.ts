@@ -14,17 +14,6 @@ export const formatDate = (date: Date | string): string => {
   return "Invalid Date";
 };
 
-export function formatCurrency(
-  amount: number,
-  locale: string = "en-GH",
-  currency: string = "GHS"
-): string {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
-  }).format(amount);
-}
-
 export function formatNumber(value: number, locale: string = "en-US"): string {
   return new Intl.NumberFormat(locale).format(value);
 }

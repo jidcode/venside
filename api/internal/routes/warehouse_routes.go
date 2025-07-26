@@ -11,17 +11,20 @@ func WarehouseRoutes(e *echo.Echo, controller warehouses.WarehouseController, se
 
 	// Auth protected routes (read-only)
 	api.Use(auth.AuthMiddleware(service))
-	r := api.Group("")
-
-	r.GET("", controller.ListWarehouses)
-	r.GET("/:id", controller.GetWarehouse)
+	readOnly := api.Group("")
+	readOnly.GET("", controller.ListWarehouses)
+	readOnly.GET("/:id", controller.GetWarehouse)
 
 	// Auth & CSRF protected routes (write operations)
-	w := api.Group("")
-	w.Use(auth.CSRFMiddleware(service))
+	whGroup := api.Group("")
+	whGroup.Use(auth.CSRFMiddleware(service))
+	whGroup.POST("", controller.CreateWarehouse)
+	whGroup.PUT("/:id", controller.UpdateWarehouse)
+	whGroup.DELETE("/:id", controller.DeleteWarehouse)
 
-	w.POST("", controller.CreateWarehouse)
-	w.PUT("/:id", controller.UpdateWarehouse)
-	w.DELETE("/:id", controller.DeleteWarehouse)
+	whGroup.POST("/:id/products", controller.AddProductsToWarehouse)
+	whGroup.DELETE("/:id/products", controller.RemoveProductsFromWarehouse)
+	whGroup.PUT("/:id/stock", controller.UpdateStockQuantity)
+	whGroup.POST("/transfer", controller.TransferProducts)
 
 }

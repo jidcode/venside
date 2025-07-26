@@ -10,14 +10,15 @@ type ProductRepository interface {
 	ListProducts(inventoryID uuid.UUID) ([]models.Product, error)
 	GetProduct(productID uuid.UUID) (models.Product, error)
 	GetProductWithDetails(productID uuid.UUID) (models.Product, error)
-	CreateProduct(product *models.Product, categories []string, storages []models.StorageRequest) error
-	UpdateProduct(product *models.Product) error
+	CreateProduct(product *models.Product, categories []string) error
+	UpdateProduct(product *models.Product, categories []string) error
 	DeleteProduct(productID uuid.UUID) error
 
-	ListProductCategories(inventoryId uuid.UUID) ([]models.ProductCategory, error)
-	GetProductImages(productId uuid.UUID) ([]models.ProductImage, error)
+	ListProductCategories(inventoryID uuid.UUID) ([]models.ProductCategory, error)
+	GetProductImages(productID uuid.UUID) ([]models.ProductImage, error)
 	CreateProductImage(image *models.ProductImage) error
-	DeleteProductImage(imageId uuid.UUID) error
+	DeleteProductImage(imageID uuid.UUID) error
+	SetPrimaryImage(imageId, inventoryID uuid.UUID) error
 }
 
 type ProductController interface {
@@ -28,5 +29,5 @@ type ProductController interface {
 	DeleteProduct(ctx echo.Context) error
 
 	ListProductCategories(ctx echo.Context) error
-	UploadProductImage(ctx echo.Context) error
+	SetPrimaryImage(ctx echo.Context) error
 }

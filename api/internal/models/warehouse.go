@@ -43,6 +43,19 @@ type WarehouseResponse struct {
 	StockItems  []StockItemResponse `json:"stockItems"`
 }
 
+type WarehouseWithStock struct {
+	ID            uuid.UUID `db:"id"`
+	Name          string    `db:"name"`
+	Location      string    `db:"location"`
+	Capacity      int       `db:"capacity"`
+	StorageType   string    `db:"storage_type"`
+	Manager       string    `db:"manager"`
+	Contact       string    `db:"contact"`
+	CreatedAt     time.Time `db:"created_at"`
+	UpdatedAt     time.Time `db:"updated_at"`
+	StockQuantity int       `db:"stock_quantity"`
+}
+
 // Warehouse stock item models
 type StockItem struct {
 	ProductID     uuid.UUID `db:"product_id" json:"productId"`

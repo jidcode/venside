@@ -30,20 +30,20 @@ type Product struct {
 }
 
 type ProductRequest struct {
-	Name          string                 `json:"name" validate:"required,max=100"`
-	Code          string                 `json:"code" validate:"max=20"`
-	SKU           string                 `json:"sku" validate:"max=20"`
-	Brand         string                 `json:"brand" validate:"max=50"`
-	Model         string                 `json:"model" validate:"max=50"`
-	Description   string                 `json:"description" validate:"max=200"`
-	TotalQuantity int                    `json:"totalQuantity" validate:"gte=0"`
-	RestockLevel  int                    `json:"restockLevel" validate:"gte=0"`
-	OptimalLevel  int                    `json:"optimalLevel" validate:"gte=0"`
-	CostPrice     float64                `json:"costPrice" validate:"gte=0"`
-	SellingPrice  float64                `json:"sellingPrice" validate:"gte=0"`
-	Categories    []string               `json:"categories" validate:"dive,min=1,max=50"`
-	Storages      []StorageRequest       `json:"storages" validate:"dive"`
-	Images        []multipart.FileHeader `json:"images" validate:"dive"`
+	Name           string                  `json:"name" validate:"required,max=100"`
+	Code           string                  `json:"code" validate:"max=20"`
+	SKU            string                  `json:"sku" validate:"max=20"`
+	Brand          string                  `json:"brand" validate:"max=50"`
+	Model          string                  `json:"model" validate:"max=50"`
+	Description    string                  `json:"description" validate:"max=200"`
+	TotalQuantity  int                     `json:"totalQuantity" validate:"gte=0"`
+	RestockLevel   int                     `json:"restockLevel" validate:"gte=0"`
+	OptimalLevel   int                     `json:"optimalLevel" validate:"gte=0"`
+	CostPrice      int                     `json:"costPrice" validate:"gte=0"`
+	SellingPrice   int                     `json:"sellingPrice" validate:"gte=0"`
+	Categories     []string                `json:"categories" validate:"dive,min=1,max=50"`
+	NewImages      []*multipart.FileHeader `json:"newImages"`
+	ExistingImages []ProductImageRequest   `json:"existingImages"`
 }
 
 type ProductResponse struct {
@@ -66,6 +66,25 @@ type ProductResponse struct {
 	Images        []ProductImageResponse    `json:"images"`
 }
 
+type ProductWithStock struct {
+	ID            uuid.UUID `db:"id"`
+	Name          string    `db:"name"`
+	Code          string    `db:"code"`
+	SKU           string    `db:"sku"`
+	Brand         string    `db:"brand"`
+	Model         string    `db:"model"`
+	Description   string    `db:"description"`
+	TotalQuantity int       `db:"total_quantity"`
+	RestockLevel  int       `db:"restock_level"`
+	OptimalLevel  int       `db:"optimal_level"`
+	CostPrice     int       `db:"cost_price"`
+	SellingPrice  int       `db:"selling_price"`
+	InventoryID   uuid.UUID `db:"inventory_id"`
+	CreatedAt     time.Time `db:"created_at"`
+	UpdatedAt     time.Time `db:"updated_at"`
+	StockQuantity int       `db:"stock_quantity"`
+}
+
 // Image models
 type ProductImage struct {
 	ID        uuid.UUID `db:"id" json:"id"`
@@ -76,6 +95,12 @@ type ProductImage struct {
 	ProductID uuid.UUID `db:"product_id" json:"productId"`
 	CreatedAt time.Time `db:"created_at" json:"createdAt"`
 	UpdatedAt time.Time `db:"updated_at" json:"updatedAt"`
+}
+
+type ProductImageRequest struct {
+	ID      string `json:"id"`
+	URL     string `json:"url"`
+	FileKey string `json:"fileKey"`
 }
 
 type ProductImageResponse struct {

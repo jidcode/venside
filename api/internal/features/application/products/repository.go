@@ -36,6 +36,7 @@ const (
 	TTL = 30 * 24 * time.Hour // 30 days
 )
 
+// Product operations
 func (r *Repository) ListProducts(inventoryID uuid.UUID) ([]models.Product, error) {
 	key := productListCacheKey(inventoryID)
 
@@ -116,31 +117,11 @@ func (r *Repository) GetProductWithDetails(productID uuid.UUID) (models.Product,
 	product.Categories = categories
 
 	// Warehouses
-	type WarehouseWithStock struct {
-		ID            uuid.UUID `db:"id"`
-		Name          string    `db:"name"`
-		Location      string    `db:"location"`
-		Capacity      int       `db:"capacity"`
-		StorageType   string    `db:"storage_type"`
-		Manager       string    `db:"manager"`
-		Contact       string    `db:"contact"`
-		CreatedAt     time.Time `db:"created_at"`
-		UpdatedAt     time.Time `db:"updated_at"`
-		StockQuantity int       `db:"stock_quantity"`
-	}
-
-	var warehousesWithStock []WarehouseWithStock
+	var warehousesWithStock []models.WarehouseWithStock
 	query := `
 		SELECT 
-			w.id,
-			w.name,
-			w.location,
-			w.capacity,
-			w.storage_type,
-			w.manager,
-			w.contact,
-			w.created_at,
-			w.updated_at,
+			w.id, w.name, w.location, w.capacity, w.storage_type,
+			w.manager, w.contact, w.created_at,	w.updated_at, 
 			wpl.stock_quantity
 		FROM warehouse_product_link wpl
 		JOIN warehouses w ON wpl.warehouse_id = w.id
@@ -175,7 +156,7 @@ func (r *Repository) GetProductWithDetails(productID uuid.UUID) (models.Product,
 	return product, nil
 }
 
-func (r *Repository) CreateProduct(product *models.Product, categories []string, storages []models.StorageRequest) error {
+func (r *Repository) CreateProduct(product *models.Product, categories []string) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return errors.DatabaseError(err, "Error starting transaction")
@@ -205,11 +186,6 @@ func (r *Repository) CreateProduct(product *models.Product, categories []string,
 		return err
 	}
 
-	err = r.handleProductStorages(tx, product.ID, storages)
-	if err != nil {
-		return err
-	}
-
 	if err := tx.Commit(); err != nil {
 		return errors.DatabaseError(err, "Error committing transaction")
 	}
@@ -218,7 +194,14 @@ func (r *Repository) CreateProduct(product *models.Product, categories []string,
 	return nil
 }
 
-func (r *Repository) UpdateProduct(product *models.Product) error {
+func (r *Repository) UpdateProduct(product *models.Product, categories []string) error {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return errors.DatabaseError(err, "Error starting transaction")
+	}
+	defer tx.Rollback()
+
+	// Update basic product details
 	query := `
 		UPDATE products SET 
 			name = :name,
@@ -235,13 +218,31 @@ func (r *Repository) UpdateProduct(product *models.Product) error {
 			updated_at = :updated_at
 		WHERE id = :id
 	`
-	_, err := r.db.NamedExec(query, product)
+	_, err = tx.NamedExec(query, product)
 	if err != nil {
 		return errors.DatabaseError(err, "Error updating product")
 	}
 
-	r.invalidateProductCaches(product.ID, product.InventoryID)
+	// Always remove existing category links
+	deleteQuery := `DELETE FROM product_category_link WHERE product_id = $1`
+	_, err = tx.Exec(deleteQuery, product.ID)
+	if err != nil {
+		return errors.DatabaseError(err, "Error removing existing category links")
+	}
 
+	// Only add new links if categories are provided
+	if len(categories) > 0 {
+		err = r.handleProductCategories(tx, product.ID, product.InventoryID, categories)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.DatabaseError(err, "Error committing transaction")
+	}
+
+	r.invalidateProductCaches(product.ID, product.InventoryID)
 	return nil
 }
 
@@ -262,7 +263,7 @@ func (r *Repository) DeleteProduct(productID uuid.UUID) error {
 	return nil
 }
 
-// ///////
+// Category operations
 func (r *Repository) ListProductCategories(inventoryID uuid.UUID) ([]models.ProductCategory, error) {
 	key := categoryListCacheKey(inventoryID)
 
@@ -286,11 +287,12 @@ func (r *Repository) ListProductCategories(inventoryID uuid.UUID) ([]models.Prod
 	return categories, nil
 }
 
-func (r *Repository) GetProductImages(productId uuid.UUID) ([]models.ProductImage, error) {
+// Image operations
+func (r *Repository) GetProductImages(productID uuid.UUID) ([]models.ProductImage, error) {
 	images := []models.ProductImage{}
 	query := `SELECT * FROM product_images WHERE product_id = $1 ORDER BY is_primary DESC, created_at ASC`
 
-	err := r.db.Select(&images, query, productId)
+	err := r.db.Select(&images, query, productID)
 	if err != nil {
 		return nil, errors.DatabaseError(err, "Get Product Images")
 	}
@@ -312,13 +314,54 @@ func (r *Repository) CreateProductImage(image *models.ProductImage) error {
 	return nil
 }
 
-func (r *Repository) DeleteProductImage(imageId uuid.UUID) error {
+func (r *Repository) DeleteProductImage(imageID uuid.UUID) error {
 	query := `DELETE FROM product_images WHERE id = $1`
 
-	_, err := r.db.Exec(query, imageId)
+	_, err := r.db.Exec(query, imageID)
 	if err != nil {
 		return errors.DatabaseError(err, "Delete Product Image")
 	}
+
+	return nil
+}
+
+func (r *Repository) SetPrimaryImage(imageID, inventoryID uuid.UUID) error {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return errors.DatabaseError(err, "Begin transaction for SetPrimaryImage")
+	}
+
+	// get the product ID for this image
+	var productID uuid.UUID
+	getProductQuery := `SELECT product_id FROM product_images WHERE id = $1`
+	err = tx.Get(&productID, getProductQuery, imageID)
+	if err != nil {
+		tx.Rollback()
+		return errors.DatabaseError(err, "Get product ID for image")
+	}
+
+	// Reset all images, then set specified image to primary
+	resetPrimaryQuery := `UPDATE product_images SET is_primary = false WHERE product_id = $1`
+	_, err = tx.Exec(resetPrimaryQuery, productID)
+	if err != nil {
+		tx.Rollback()
+		return errors.DatabaseError(err, "Reset primary images")
+	}
+
+	setPrimaryQuery := `UPDATE product_images SET is_primary = true WHERE id = $1`
+	_, err = tx.Exec(setPrimaryQuery, imageID)
+	if err != nil {
+		tx.Rollback()
+		return errors.DatabaseError(err, "Set primary image")
+	}
+
+	// Commit the transaction
+	err = tx.Commit()
+	if err != nil {
+		return errors.DatabaseError(err, "Commit transaction for SetPrimaryImage")
+	}
+
+	r.invalidateProductCaches(productID, inventoryID)
 
 	return nil
 }

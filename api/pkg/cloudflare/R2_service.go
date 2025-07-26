@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"image"
+	"image/jpeg"
 	"mime/multipart"
 	"path/filepath"
 	"strings"
@@ -12,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/disintegration/imaging"
 	"github.com/google/uuid"
 )
 
@@ -28,38 +31,41 @@ func (r2 *R2Client) UploadFile(file *multipart.FileHeader) (*UploadResult, error
 	}
 	defer src.Close()
 
+	// Read file into memory
 	buf := bytes.NewBuffer(nil)
 	if _, err := buf.ReadFrom(src); err != nil {
 		return nil, fmt.Errorf("failed to read file: %w", err)
 	}
 
-	fileExt := filepath.Ext(file.Filename)
-	fileName := strings.TrimSuffix(file.Filename, fileExt)
-	fileKey := fmt.Sprintf("uploads/%s_%s%s", uuid.New().String(), fileName, fileExt)
-
-	contentType := file.Header.Get("Content-Type")
-	if contentType == "" {
-		contentType = getContentType(fileExt)
+	// Optimize image and convert to webp
+	optimizedBuf, err := optimizeImage(buf.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("failed to optimize image: %w", err)
 	}
+
+	// Generate short unique file key
+	newID := uuid.New().String()
+	shortHex := newID[:8]
+	fileName := strings.TrimSuffix(file.Filename, filepath.Ext(file.Filename))
+	fileKey := fmt.Sprintf("uploads/%s_%s.webp", shortHex, fileName)
 
 	_, err = r2.client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(r2.bucketName),
 		Key:         aws.String(fileKey),
-		Body:        bytes.NewReader(buf.Bytes()),
-		ContentType: aws.String(contentType),
+		Body:        bytes.NewReader(optimizedBuf),
+		ContentType: aws.String("image/webp"),
 		Metadata: map[string]string{
 			"uploaded-at": time.Now().Format(time.RFC3339),
 		},
 	})
-
 	if err != nil {
-		return nil, fmt.Errorf("failed to upload file to R2: %w", err)
+		return nil, fmt.Errorf("failed to upload to R2: %w", err)
 	}
 
-	publicURL := fmt.Sprintf("%s/%s", strings.TrimSuffix(r2.baseURL, "/"), fileKey)
+	url := fmt.Sprintf("%s/%s", strings.TrimSuffix(r2.baseURL, "/"), fileKey)
 
 	return &UploadResult{
-		URL:     publicURL,
+		URL:     url,
 		FileKey: fileKey,
 		Name:    file.Filename,
 	}, nil
@@ -120,46 +126,49 @@ func (r2 *R2Client) FileExists(fileKey string) (bool, error) {
 	return true, nil
 }
 
-func getContentType(fileExt string) string {
-	switch strings.ToLower(fileExt) {
-	case ".jpg", ".jpeg":
-		return "image/jpeg"
-	case ".png":
-		return "image/png"
-	case ".gif":
-		return "image/gif"
-	case ".webp":
-		return "image/webp"
-	case ".svg":
-		return "image/svg+xml"
-	case ".pdf":
-		return "application/pdf"
-	case ".txt":
-		return "text/plain"
-	case ".json":
-		return "application/json"
-	case ".xml":
-		return "application/xml"
-	default:
-		return "application/octet-stream"
+// Helpers
+func optimizeImage(buf []byte) ([]byte, error) {
+	img, format, err := image.Decode(bytes.NewReader(buf))
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode image: %w", err)
 	}
+
+	if !isSupportedFormat(format) {
+		return nil, fmt.Errorf("unsupported image format: %s", format)
+	}
+
+	img = imaging.Fit(img, 1000, 1000, imaging.Lanczos)
+
+	outputBuf := new(bytes.Buffer)
+	if err := jpeg.Encode(outputBuf, img, &jpeg.Options{Quality: 80}); err != nil {
+		return nil, fmt.Errorf("failed to encode optimized image: %w", err)
+	}
+
+	return outputBuf.Bytes(), nil
 }
 
-// IsValidImageFile checks if the file extension is a valid image type.
+func isSupportedFormat(format string) bool {
+	supported := []string{"jpeg", "png", "gif"}
+	for _, f := range supported {
+		if format == f {
+			return true
+		}
+	}
+	return false
+}
+
 func IsValidImageFile(filename string) bool {
 	ext := strings.ToLower(filepath.Ext(filename))
-	validExts := []string{".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"}
+	validExts := []string{".jpg", ".jpeg", ".png", ".gif", ".webp"}
 
 	for _, validExt := range validExts {
 		if ext == validExt {
 			return true
 		}
 	}
-
 	return false
 }
 
-// IsValidFileSize checks if the file size is within the allowed max size (in MB).
 func IsValidFileSize(fileSize int64, maxSizeMB int64) bool {
 	maxSizeBytes := maxSizeMB * 1024 * 1024
 	return fileSize <= maxSizeBytes

@@ -2,6 +2,8 @@ package products
 
 import (
 	"database/sql"
+	"fmt"
+	"math/rand"
 	"strings"
 
 	"github.com/app/venside/internal/models"
@@ -21,52 +23,54 @@ func NewValidator(db *sqlx.DB) *ProductValidator {
 func (v *ProductValidator) ValidateProduct(product *models.Product) error {
 	var errorMessages []string
 
-	// Validate name uniqueness
-	nameExists, err := v.productNameExists(product.Name, product.InventoryID, product.ID)
+	//  Default product code generation
+	if product.Code == "" {
+		generatedCode, err := v.generateProductCode(product.Name, product.Brand, product.Model)
+		if err != nil {
+			return errors.DatabaseError(err, "Error generating product code")
+		}
+		product.Code = generatedCode
+	}
+
+	// Default restock and optimal levels
+	if product.RestockLevel == 0 {
+		product.RestockLevel = 10
+	}
+	if product.OptimalLevel == 0 {
+		product.OptimalLevel = 100
+	}
+
+	if (product.OptimalLevel == 0 || product.OptimalLevel < product.TotalQuantity) && product.TotalQuantity > 100 {
+		product.OptimalLevel = product.TotalQuantity
+	}
+
+	// Validate unique fields
+	nameExists, err := v.fieldExists("name", product.Name, product.InventoryID, product.ID)
 	if err != nil {
 		return errors.DatabaseError(err, "Error validating product name")
 	}
 	if nameExists {
-		errorMessages = append(errorMessages, "Product name already exists in this inventory")
+		errorMessages = append(errorMessages, "Product name already exists")
 	}
 
-	// Validate code uniqueness if provided
-	if product.Code != "" {
-		codeExists, err := v.productCodeExists(product.Code, product.InventoryID, product.ID)
-		if err != nil {
-			return errors.DatabaseError(err, "Error validating product code")
-		}
-		if codeExists {
-			errorMessages = append(errorMessages, "Product code already exists in this inventory")
-		}
-	}
-
-	// Validate SKU uniqueness if provided
 	if product.SKU != "" {
-		skuExists, err := v.productSkuExists(product.SKU, product.InventoryID, product.ID)
+		skuExists, err := v.fieldExists("sku", product.SKU, product.InventoryID, product.ID)
 		if err != nil {
 			return errors.DatabaseError(err, "Error validating product SKU")
 		}
 		if skuExists {
-			errorMessages = append(errorMessages, "Product SKU already exists in this inventory")
+			errorMessages = append(errorMessages, "SKU already exists")
 		}
 	}
 
-	// Validate quantities
-	if product.TotalQuantity < 0 {
-		errorMessages = append(errorMessages, "Total quantity cannot be negative")
-	}
-	if product.RestockLevel < 0 {
-		errorMessages = append(errorMessages, "Restock level cannot be negative")
-	}
-	if product.OptimalLevel < 0 {
-		errorMessages = append(errorMessages, "Optimal level cannot be negative")
-	}
-	if product.CostPrice < 0 {
-		errorMessages = append(errorMessages, "Cost price cannot be negative")
-	}
-	if product.SellingPrice < 0 {
-		errorMessages = append(errorMessages, "Selling price cannot be negative")
+	if product.Code != "" {
+		codeExists, err := v.fieldExists("code", product.Code, product.InventoryID, product.ID)
+		if err != nil {
+			return errors.DatabaseError(err, "Error validating product code")
+		}
+		if codeExists {
+			errorMessages = append(errorMessages, "Product code already exists")
+		}
 	}
 
 	if len(errorMessages) > 0 {
@@ -76,38 +80,64 @@ func (v *ProductValidator) ValidateProduct(product *models.Product) error {
 	return nil
 }
 
-func (v *ProductValidator) productNameExists(name string, inventoryID, productID uuid.UUID) (bool, error) {
-	const query = `
+// Helper methods
+func (v *ProductValidator) fieldExists(fieldName, fieldValue string, inventoryID, productID uuid.UUID) (bool, error) {
+	query := `
 		SELECT EXISTS(
 			SELECT 1 FROM products 
-			WHERE name = $1 AND inventory_id = $2 AND id != $3
+			WHERE ` + fieldName + ` = $1 
+			AND inventory_id = $2 
+			AND id != $3
 		)`
-	return v.exists(query, name, inventoryID, productID)
-}
 
-func (v *ProductValidator) productCodeExists(code string, inventoryID, productID uuid.UUID) (bool, error) {
-	const query = `
-		SELECT EXISTS(
-			SELECT 1 FROM products 
-			WHERE code = $1 AND inventory_id = $2 AND id != $3
-		)`
-	return v.exists(query, code, inventoryID, productID)
-}
-
-func (v *ProductValidator) productSkuExists(sku string, inventoryID, productID uuid.UUID) (bool, error) {
-	const query = `
-		SELECT EXISTS(
-			SELECT 1 FROM products 
-			WHERE sku = $1 AND inventory_id = $2 AND id != $3
-		)`
-	return v.exists(query, sku, inventoryID, productID)
-}
-
-func (v *ProductValidator) exists(query string, value string, inventoryID, productID uuid.UUID) (bool, error) {
 	var exists bool
-	err := v.db.Get(&exists, query, value, inventoryID, productID)
+	err := v.db.Get(&exists, query, fieldValue, inventoryID, productID)
 	if err != nil && err != sql.ErrNoRows {
 		return false, err
 	}
 	return exists, nil
+}
+
+func (v *ProductValidator) generateProductCode(productName, productBrand, productModel string) (string, error) {
+	// PN - Product Name Prefix
+	nameWords := strings.Fields(strings.ToUpper(productName))
+	var pn string
+	if len(nameWords) >= 2 {
+		pn = string(nameWords[0][0]) + string(nameWords[1][0])
+	} else if len(nameWords) == 1 {
+		word := nameWords[0]
+		if len(word) >= 2 {
+			pn = word[:2]
+		} else {
+			pn = word + "X"
+		}
+	} else {
+		pn = "XX"
+	}
+
+	// BM - Brand or Model Prefix
+	var bm string
+	if productBrand != "" {
+		brand := strings.ToUpper(productBrand)
+		if len(brand) >= 2 {
+			bm = brand[:2]
+		} else {
+			bm = brand + "X"
+		}
+	} else if productModel != "" {
+		model := strings.ToUpper(productModel)
+		if len(model) >= 2 {
+			bm = model[:2]
+		} else {
+			bm = model + "X"
+		}
+	} else {
+		bm = "00"
+	}
+
+	// 0000 - Random 4-digit number
+	randomNumber := fmt.Sprintf("%04d", rand.Intn(10000))
+
+	// Combine all parts
+	return fmt.Sprintf("%s-%s-%s", pn, bm, randomNumber), nil
 }

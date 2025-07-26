@@ -16,11 +16,8 @@
     @apply p-4 md:px-10 xl:px-12;
   }
 
-  .sentence-case {
-    text-transform: lowercase;
-  }
-  .sentence-case::first-letter {
-    text-transform: uppercase;
+  .card {
+    @apply bg-primary border border-neutral/20 shadow-xs rounded-lg p-6;
   }
 }
 

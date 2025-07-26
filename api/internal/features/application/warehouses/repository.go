@@ -9,6 +9,7 @@ import (
 	"github.com/app/venside/pkg/errors"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type Repository struct {
@@ -88,43 +89,12 @@ func (r *Repository) GetWarehouseWithStock(warehouseID uuid.UUID) (models.Wareho
 	}
 
 	// Products with stock quantities
-	type ProductWithStock struct {
-		ID            uuid.UUID `db:"id"`
-		Name          string    `db:"name"`
-		Code          string    `db:"code"`
-		SKU           string    `db:"sku"`
-		Brand         string    `db:"brand"`
-		Model         string    `db:"model"`
-		Description   string    `db:"description"`
-		TotalQuantity int       `db:"total_quantity"`
-		RestockLevel  int       `db:"restock_level"`
-		OptimalLevel  int       `db:"optimal_level"`
-		CostPrice     int       `db:"cost_price"`
-		SellingPrice  int       `db:"selling_price"`
-		InventoryID   uuid.UUID `db:"inventory_id"`
-		CreatedAt     time.Time `db:"created_at"`
-		UpdatedAt     time.Time `db:"updated_at"`
-		StockQuantity int       `db:"stock_quantity"`
-	}
-
-	var productsWithStock []ProductWithStock
+	var productsWithStock []models.ProductWithStock
 	query := `
 		SELECT 
-			p.id,
-			p.name,
-			p.code,
-			p.sku,
-			p.brand,
-			p.model,
-			p.description,
-			p.total_quantity,
-			p.restock_level,
-			p.optimal_level,
-			p.cost_price,
-			p.selling_price,
-			p.inventory_id,
-			p.created_at,
-			p.updated_at,
+			p.id, p.name, p.code, p.sku, p.brand, p.model, p.description,
+			p.total_quantity,p.restock_level, p.optimal_level, p.cost_price,
+			p.selling_price, p.inventory_id, p.created_at, p.updated_at,
 			wpl.stock_quantity
 		FROM warehouse_product_link wpl
 		JOIN products p ON wpl.product_id = p.id
@@ -223,6 +193,126 @@ func (r *Repository) DeleteWarehouse(warehouseID uuid.UUID) error {
 	}
 
 	r.invalidateWarehouseCaches(warehouseID, warehouse.InventoryID)
+
+	return nil
+}
+
+// //
+func (r *Repository) AddProductsToWarehouse(warehouseID uuid.UUID, stockItems []models.StockItemRequest) error {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return errors.DatabaseError(err, "Error starting transaction")
+	}
+	defer tx.Rollback()
+
+	query := `
+		INSERT INTO warehouse_product_link (product_id, warehouse_id, stock_quantity)
+		VALUES (:product_id, :warehouse_id, :stock_quantity)
+		ON CONFLICT (product_id, warehouse_id) DO UPDATE 
+		SET stock_quantity = EXCLUDED.stock_quantity
+	`
+
+	for _, item := range stockItems {
+		params := map[string]interface{}{
+			"product_id":     item.ProductID,
+			"warehouse_id":   warehouseID,
+			"stock_quantity": item.StockQuantity,
+		}
+		if _, err := tx.NamedExec(query, params); err != nil {
+			return errors.DatabaseError(err, "Error adding product to warehouse")
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.DatabaseError(err, "Error committing transaction")
+	}
+
+	r.cache.Delete(warehouseCacheKey(warehouseID))
+	return nil
+}
+
+func (r *Repository) RemoveProductsFromWarehouse(warehouseID uuid.UUID, productIDs []uuid.UUID) error {
+	query := `DELETE FROM warehouse_product_link WHERE warehouse_id = $1 AND product_id = ANY($2)`
+
+	_, err := r.db.Exec(query, warehouseID, pq.Array(productIDs))
+	if err != nil {
+		return errors.DatabaseError(err, "Error removing products from warehouse")
+	}
+
+	r.cache.Delete(warehouseCacheKey(warehouseID))
+	return nil
+}
+
+func (r *Repository) UpdateStockQuantity(warehouseID, productID uuid.UUID, quantity int) error {
+	query := `
+		UPDATE warehouse_product_link 
+		SET stock_quantity = $1
+		WHERE warehouse_id = $2 AND product_id = $3
+	`
+
+	res, err := r.db.Exec(query, quantity, warehouseID, productID)
+	if err != nil {
+		return errors.DatabaseError(err, "Error updating stock quantity")
+	}
+
+	rowsAffected, _ := res.RowsAffected()
+	if rowsAffected == 0 {
+		return errors.NotFoundError("No such warehouse-product record found")
+	}
+
+	r.cache.Delete(warehouseCacheKey(warehouseID))
+	return nil
+}
+
+func (r *Repository) TransferProducts(fromWarehouseID, toWarehouseID uuid.UUID, transferItems []models.StockItemRequest) error {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return errors.DatabaseError(err, "Error starting transfer transaction")
+	}
+	defer tx.Rollback()
+
+	for _, item := range transferItems {
+		// 1. Deduct from source warehouse
+		deductQuery := `
+			UPDATE warehouse_product_link
+			SET stock_quantity = stock_quantity - $1
+			WHERE warehouse_id = $2 AND product_id = $3 AND stock_quantity >= $1
+		`
+		res, err := tx.Exec(deductQuery, item.StockQuantity, fromWarehouseID, item.ProductID)
+		if err != nil {
+			return errors.DatabaseError(err, "Error deducting stock from source warehouse")
+		}
+		rowsAffected, _ := res.RowsAffected()
+		if rowsAffected == 0 {
+			return errors.ValidationError("Insufficient stock or product not found in source warehouse")
+		}
+
+		// 2. Add to destination warehouse
+		addQuery := `
+			INSERT INTO warehouse_product_link (product_id, warehouse_id, stock_quantity)
+			VALUES (:product_id, :warehouse_id, :stock_quantity)
+			ON CONFLICT (product_id, warehouse_id) DO UPDATE
+			SET stock_quantity = warehouse_product_link.stock_quantity + EXCLUDED.stock_quantity
+		`
+
+		params := map[string]interface{}{
+			"product_id":     item.ProductID,
+			"warehouse_id":   toWarehouseID,
+			"stock_quantity": item.StockQuantity,
+		}
+
+		if _, err := tx.NamedExec(addQuery, params); err != nil {
+			return errors.DatabaseError(err, "Error adding stock to destination warehouse")
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.DatabaseError(err, "Error committing transfer transaction")
+	}
+
+	// Invalidate both warehouse caches
+	r.cache.Delete(warehouseCacheKey(fromWarehouseID))
+	r.cache.Delete(warehouseCacheKey(toWarehouseID))
 
 	return nil
 }

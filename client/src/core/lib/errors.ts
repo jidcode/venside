@@ -52,7 +52,7 @@ export const handleApiError = (
   };
 };
 
-export function errorMessage(error: unknown): { message: string } {
+export function errorMessage(error: any): { message: string } {
   return {
     message:
       error instanceof Error ? error.message : "An unexpected error occurred",

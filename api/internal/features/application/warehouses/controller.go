@@ -136,3 +136,90 @@ func (c *Controller) DeleteWarehouse(ctx echo.Context) error {
 
 	return ctx.NoContent(http.StatusNoContent)
 }
+
+// //
+func (c *Controller) AddProductsToWarehouse(ctx echo.Context) error {
+	warehouseID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		return errors.ValidationError("Invalid warehouse ID")
+	}
+
+	var stockItems []models.StockItemRequest
+	if err := utils.BindAndValidateRequest(ctx, &stockItems); err != nil {
+		return err
+	}
+
+	if err := c.repo.AddProductsToWarehouse(warehouseID, stockItems); err != nil {
+		return logger.Error(ctx, "Failed to add products to warehouse", err, logrus.Fields{
+			"warehouse_id": warehouseID,
+		})
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
+}
+
+func (c *Controller) RemoveProductsFromWarehouse(ctx echo.Context) error {
+	warehouseID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		return errors.ValidationError("Invalid warehouse ID")
+	}
+
+	var productIDs []uuid.UUID
+	if err := utils.BindAndValidateRequest(ctx, &productIDs); err != nil {
+		return err
+	}
+
+	if err := c.repo.RemoveProductsFromWarehouse(warehouseID, productIDs); err != nil {
+		return logger.Error(ctx, "Failed to remove products from warehouse", err, logrus.Fields{
+			"warehouse_id": warehouseID,
+		})
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
+}
+
+func (c *Controller) UpdateStockQuantity(ctx echo.Context) error {
+	warehouseID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		return errors.ValidationError("Invalid warehouse ID")
+	}
+
+	var payload struct {
+		ProductID     uuid.UUID `json:"productId"`
+		StockQuantity int       `json:"stockQuantity"`
+	}
+
+	if err := utils.BindAndValidateRequest(ctx, &payload); err != nil {
+		return err
+	}
+
+	if err := c.repo.UpdateStockQuantity(warehouseID, payload.ProductID, payload.StockQuantity); err != nil {
+		return logger.Error(ctx, "Failed to update stock quantity", err, logrus.Fields{
+			"warehouse_id": warehouseID,
+			"product_id":   payload.ProductID,
+		})
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
+}
+
+func (c *Controller) TransferProducts(ctx echo.Context) error {
+	var payload struct {
+		FromWarehouseID uuid.UUID                 `json:"fromWarehouseId"`
+		ToWarehouseID   uuid.UUID                 `json:"toWarehouseId"`
+		Items           []models.StockItemRequest `json:"items"`
+	}
+
+	if err := utils.BindAndValidateRequest(ctx, &payload); err != nil {
+		return err
+	}
+
+	if err := c.repo.TransferProducts(payload.FromWarehouseID, payload.ToWarehouseID, payload.Items); err != nil {
+		return logger.Error(ctx, "Failed to transfer products between warehouses", err, logrus.Fields{
+			"from": payload.FromWarehouseID,
+			"to":   payload.ToWarehouseID,
+		})
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
+}

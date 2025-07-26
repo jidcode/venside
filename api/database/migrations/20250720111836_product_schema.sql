@@ -17,8 +17,6 @@ CREATE TABLE IF NOT EXISTS products (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (name, inventory_id),
-    UNIQUE (sku, inventory_id),
-    UNIQUE (code, inventory_id),
     CONSTRAINT fk_products_inventory FOREIGN KEY (inventory_id) REFERENCES inventories (id) ON DELETE CASCADE
 );
 

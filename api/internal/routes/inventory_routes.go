@@ -11,16 +11,14 @@ func InventoryRoutes(e *echo.Echo, controller inventories.InventoryController, s
 
 	// Auth protected routes (read-only)
 	api.Use(auth.AuthMiddleware(service))
-	r := api.Group("")
-
-	r.GET("", controller.ListInventories)
-	r.GET("/:id", controller.GetInventory)
+	readOnly := api.Group("")
+	readOnly.GET("", controller.ListInventories)
+	readOnly.GET("/:id", controller.GetInventory)
 
 	// Auth & CSRF protected routes (write operations)
-	w := api.Group("")
-	w.Use(auth.CSRFMiddleware(service))
-
-	w.POST("", controller.CreateInventory)
-	w.PUT("/:id", controller.UpdateInventory)
-	w.DELETE("/:id", controller.DeleteInventory)
+	invGroup := api.Group("")
+	invGroup.Use(auth.CSRFMiddleware(service))
+	invGroup.POST("", controller.CreateInventory)
+	invGroup.PUT("/:id", controller.UpdateInventory)
+	invGroup.DELETE("/:id", controller.DeleteInventory)
 }

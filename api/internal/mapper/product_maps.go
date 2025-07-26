@@ -1,16 +1,11 @@
 package mapper
 
 import (
-	"math"
 	"time"
 
 	"github.com/app/venside/internal/models"
 	"github.com/google/uuid"
 )
-
-func convertToCents(value float64) int {
-	return int(math.Round(value * 100))
-}
 
 func ToCreateProduct(req *models.ProductRequest, inventoryID uuid.UUID) *models.Product {
 	return &models.Product{
@@ -24,8 +19,8 @@ func ToCreateProduct(req *models.ProductRequest, inventoryID uuid.UUID) *models.
 		TotalQuantity: req.TotalQuantity,
 		RestockLevel:  req.RestockLevel,
 		OptimalLevel:  req.OptimalLevel,
-		CostPrice:     convertToCents(req.CostPrice),
-		SellingPrice:  convertToCents(req.SellingPrice),
+		CostPrice:     req.CostPrice,
+		SellingPrice:  req.SellingPrice,
 		InventoryID:   inventoryID,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
@@ -44,8 +39,8 @@ func ToUpdateProduct(req *models.ProductRequest, existing *models.Product) *mode
 		TotalQuantity: req.TotalQuantity,
 		RestockLevel:  req.RestockLevel,
 		OptimalLevel:  req.OptimalLevel,
-		CostPrice:     convertToCents(float64(req.CostPrice)),
-		SellingPrice:  convertToCents(float64(req.SellingPrice)),
+		CostPrice:     req.CostPrice,
+		SellingPrice:  req.SellingPrice,
 		InventoryID:   existing.InventoryID,
 		CreatedAt:     existing.CreatedAt,
 		UpdatedAt:     time.Now(),
