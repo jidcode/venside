@@ -6,7 +6,7 @@ import { getAllWarehouses } from "@/core/services/warehouses";
 import NoWarehousesPage from "./_components/pages/no-warehouses";
 import { warehouseColumns } from "./_components/data-table/warehouse-columns";
 import { WarehouseTable } from "./_components/data-table/warehouse-table";
-import AddWarehouseSheet from "./_components/forms/add-warehouse";
+import AddWarehouseSheet from "./_components/modals/add-warehouse";
 
 export default function WarehousesPage() {
   const { data: warehouses, isLoading, error } = getAllWarehouses();

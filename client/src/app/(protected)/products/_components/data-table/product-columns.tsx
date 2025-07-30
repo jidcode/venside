@@ -10,6 +10,27 @@ import Image from "next/image";
 
 export const productColumns: ColumnDef<ProductState>[] = [
   {
+    id: "select",
+    header: ({ table }) => (
+      <input
+        type="checkbox"
+        checked={table.getIsAllPageRowsSelected()}
+        onChange={(e) => table.toggleAllPageRowsSelected(e.target.checked)}
+        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+      />
+    ),
+    cell: ({ row }) => (
+      <input
+        type="checkbox"
+        checked={row.getIsSelected()}
+        onChange={(e) => row.toggleSelected(e.target.checked)}
+        onClick={(e) => e.stopPropagation()}
+        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+      />
+    ),
+    size: 40,
+  },
+  {
     id: "image",
     header: "",
     cell: ({ row }) => {
@@ -29,7 +50,7 @@ export const productColumns: ColumnDef<ProductState>[] = [
       );
     },
     enableSorting: false,
-    size: 64, // Adjust column width
+    size: 64,
   },
   {
     accessorKey: "name",
@@ -78,14 +99,14 @@ export const productColumns: ColumnDef<ProductState>[] = [
   },
   {
     accessorKey: "totalQuantity",
-    header: "In Stock",
+    header: "Total Qty",
     enableSorting: true,
     cell: ({ row }) => {
       const quantity = row.getValue("totalQuantity") as number;
 
       if (quantity === 0) {
         return (
-          <span className="text-destructive text-xs font-medium">
+          <span className="text-red-800 text-xs font-semibold bg-red-100 px-2 py-1 rounded-full">
             Out of Stock
           </span>
         );
@@ -96,12 +117,13 @@ export const productColumns: ColumnDef<ProductState>[] = [
 
       return (
         <span
-          className={`flex items-center gap-1 text-base font-medium ${
-            isLowStock ? "text-destructive" : ""
+          className={`inline-flex items-center px-2.5 py-1 rounded-full gap-1 font-semibold  ${
+            isLowStock
+              ? "bg-red-100 text-red-800 dark:text-red-300 dark:bg-red-800/20"
+              : "bg-green-100 text-green-800 dark:text-green-300 dark:bg-green-800/20"
           }`}
         >
           {quantity.toLocaleString()}
-          {isLowStock && <span className="text-xs">(Low)</span>}
         </span>
       );
     },

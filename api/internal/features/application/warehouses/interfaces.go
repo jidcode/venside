@@ -14,7 +14,7 @@ type WarehouseRepository interface {
 	UpdateWarehouse(warehouse *models.Warehouse) error
 	DeleteWarehouse(warehouseID uuid.UUID) error
 
-	AddProductsToWarehouse(warehouseID uuid.UUID, stockItems []models.StockItemRequest) error
+	AddProductsToWarehouse(warehouseID, inventoryID uuid.UUID, items []models.StockItemRequest) error
 	RemoveProductsFromWarehouse(warehouseID uuid.UUID, productIDs []uuid.UUID) error
 	UpdateStockQuantity(warehouseID, productID uuid.UUID, quantity int) error
 	TransferProducts(fromWarehouseID, toWarehouseID uuid.UUID, transferItems []models.StockItemRequest) error

@@ -13,9 +13,11 @@ type ProductRepository interface {
 	CreateProduct(product *models.Product, categories []string) error
 	UpdateProduct(product *models.Product, categories []string) error
 	DeleteProduct(productID uuid.UUID) error
+	DeleteMultipleProducts(productIDs []uuid.UUID, inventoryID uuid.UUID) error
 
 	ListProductCategories(inventoryID uuid.UUID) ([]models.ProductCategory, error)
 	GetProductImages(productID uuid.UUID) ([]models.ProductImage, error)
+	GetImagesOfMultipleProducts(productIDs []uuid.UUID) ([]models.ProductImage, error)
 	CreateProductImage(image *models.ProductImage) error
 	DeleteProductImage(imageID uuid.UUID) error
 	SetPrimaryImage(imageId, inventoryID uuid.UUID) error
@@ -27,6 +29,7 @@ type ProductController interface {
 	CreateProduct(ctx echo.Context) error
 	UpdateProduct(ctx echo.Context) error
 	DeleteProduct(ctx echo.Context) error
+	DeleteMultipleProducts(ctx echo.Context) error
 
 	ListProductCategories(ctx echo.Context) error
 	SetPrimaryImage(ctx echo.Context) error

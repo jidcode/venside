@@ -1,20 +1,18 @@
 "use client";
 
 import ErrorPage from "@/app/error";
+import Link from "next/link";
+import { PackagePlus } from "lucide-react";
 import { CustomLoader } from "@/core/components/elements/loader";
 import { getAllProducts } from "@/core/services/products";
 import { productColumns } from "./_components/data-table/product-columns";
 import { ProductTable } from "./_components/data-table/product-table";
 import { Button } from "@/core/components/ui/button";
-import Link from "next/link";
-import { PackagePlus } from "lucide-react";
 import NoProductsPage from "./_components/pages/no-products";
 
 export default function ProductsPage() {
   const { data: products, isLoading, error } = getAllProducts();
   const totalCount = products?.length;
-
-  console.log(products);
 
   if (error) return <ErrorPage />;
   if (isLoading) return <CustomLoader />;

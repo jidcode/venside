@@ -9,6 +9,7 @@ import (
 	"github.com/app/venside/pkg/errors"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type Repository struct {
@@ -263,6 +264,28 @@ func (r *Repository) DeleteProduct(productID uuid.UUID) error {
 	return nil
 }
 
+func (r *Repository) DeleteMultipleProducts(productIDs []uuid.UUID, inventoryID uuid.UUID) error {
+	if len(productIDs) == 0 {
+		return nil
+	}
+
+	query := `DELETE FROM products WHERE id = ANY($1)`
+
+	_, err := r.db.Exec(query, pq.Array(productIDs))
+	if err != nil {
+		return errors.DatabaseError(err, "Error deleting multiple products")
+	}
+
+	for _, productID := range productIDs {
+		r.cache.Delete(productCacheKey(productID))
+	}
+
+	r.cache.Delete(productListCacheKey(inventoryID))
+	r.cache.Delete(categoryListCacheKey(inventoryID))
+
+	return nil
+}
+
 // Category operations
 func (r *Repository) ListProductCategories(inventoryID uuid.UUID) ([]models.ProductCategory, error) {
 	key := categoryListCacheKey(inventoryID)
@@ -295,6 +318,22 @@ func (r *Repository) GetProductImages(productID uuid.UUID) ([]models.ProductImag
 	err := r.db.Select(&images, query, productID)
 	if err != nil {
 		return nil, errors.DatabaseError(err, "Get Product Images")
+	}
+
+	return images, nil
+}
+
+func (r *Repository) GetImagesOfMultipleProducts(productIDs []uuid.UUID) ([]models.ProductImage, error) {
+	if len(productIDs) == 0 {
+		return nil, nil
+	}
+
+	query := `SELECT file_key FROM product_images WHERE product_id = ANY($1)`
+
+	var images []models.ProductImage
+	err := r.db.Select(&images, query, pq.Array(productIDs))
+	if err != nil {
+		return nil, errors.DatabaseError(err, "Error getting multiple product images")
 	}
 
 	return images, nil

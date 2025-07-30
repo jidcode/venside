@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { JetBrains_Mono, Spectral, Commissioner } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 const commissioner = Commissioner({
   variable: "--font-commissioner",
@@ -47,6 +48,7 @@ export default function RootLayout({
         >
           {children}
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );

@@ -11,7 +11,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/core/components/ui/sheet";
-import { WarehouseRequest, warehouseSchema } from "@/core/schema/validator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -21,59 +20,69 @@ import {
   DisplayErrors,
   parseServerErrors,
 } from "@/core/components/elements/error-display";
-import WarehouseFormFields from "./form-fields";
+import { PackagePlus } from "lucide-react";
+import {
+  WarehouseStockRequest,
+  warehouseStockSchema,
+} from "@/core/schema/validator";
 import { AppError } from "@/core/lib/errors";
-import { Check, HousePlus } from "lucide-react";
+import SelectProducts from "../forms/select-products";
 
-export default function AddWarehouseSheet() {
+export default function AddStockItemSheet({
+  warehouseId,
+}: {
+  warehouseId: string;
+}) {
   const [isOpen, setIsOpen] = useState(false);
-
   const handleClose = () => setIsOpen(false);
   return (
-    <>
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button variant="secondary">
-            <HousePlus className="size-5" />
-            <span>Add Warehouse</span>
-          </Button>
-        </SheetTrigger>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button variant="secondary">
+          <PackagePlus className="size-5" />
+          <span>Add Items</span>
+        </Button>
+      </SheetTrigger>
 
-        <SheetTitle className="sr-only">Add Warehouse</SheetTitle>
+      <SheetTitle className="sr-only">Add Product to Warehouse</SheetTitle>
 
-        <SheetContent className="flex flex-col bg-primary border-none h-full min-w-full md:min-w-1/3">
-          <AddWarehouseForm closeSheet={handleClose} />
-        </SheetContent>
-      </Sheet>
-    </>
+      <SheetContent className="flex flex-col bg-primary border-none h-full min-w-full md:min-w-1/2">
+        <AddStockItem warehouseId={warehouseId} closeSheet={handleClose} />
+      </SheetContent>
+    </Sheet>
   );
 }
 
-function AddWarehouseForm({ closeSheet }: { closeSheet: () => void }) {
+interface AddStockItemProps {
+  warehouseId: string;
+  closeSheet: () => void;
+}
+
+function AddStockItem({ warehouseId, closeSheet }: AddStockItemProps) {
   const [errorResponse, setErrorResponse] = useState<string | null>(null);
+  const { addProductsToWarehouse } = useWarehouseService();
 
-  const { createWarehouse } = useWarehouseService();
-
-  const form = useForm<WarehouseRequest>({
-    resolver: zodResolver(warehouseSchema),
+  const form = useForm<WarehouseStockRequest>({
+    resolver: zodResolver(warehouseStockSchema),
     defaultValues: {
-      capacity: 0,
-      storageType: "units",
+      stockItems: [],
     },
   });
 
-  const action: SubmitHandler<WarehouseRequest> = async (formData) => {
+  const action: SubmitHandler<WarehouseStockRequest> = async (formData) => {
     setErrorResponse(null);
+    console.log(formData);
 
     try {
-      const response = await createWarehouse(formData);
+      const response = await addProductsToWarehouse(warehouseId, formData);
+      console.log(response);
 
       if (response?.success) {
         form.reset();
         closeSheet();
       } else if (response?.error) {
         setErrorResponse(
-          (response.error as AppError).message || "Request failed!"
+          (response.error as AppError).message || "Failed to add products"
         );
       }
     } catch (error) {
@@ -85,24 +94,31 @@ function AddWarehouseForm({ closeSheet }: { closeSheet: () => void }) {
 
   const isSubmitting = form.formState.isSubmitting;
   const serverErrors = parseServerErrors(errorResponse);
+  const selectedCount = form.watch("stockItems")?.length || 0;
 
   return (
     <form onSubmit={form.handleSubmit(action)}>
       <Card className="border-none shadow-none text-foreground p-0">
         <CardHeader className="sticky top-0 bg-accent/5">
-          <div className="flex items-center justify-between px-4 py-6">
-            <CardTitle className="text-xl">New Warehouse</CardTitle>
+          <div className="flex items-center justify-between p-6">
+            <CardTitle className="text-xl">Assign New Stock</CardTitle>
 
             <div className="flex items-center gap-2">
-              <Button type="submit" disabled={isSubmitting} variant="secondary">
+              <Button
+                type="submit"
+                disabled={isSubmitting || selectedCount === 0}
+                variant="secondary"
+              >
                 {isSubmitting ? (
                   <span className="flex items-center gap-1 text-sm">
                     <RiLoader2Fill className="h-4 w-4 animate-spin" />
-                    <p>Adding Warehouse...</p>
+                    <p>Adding Products...</p>
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1">
-                    <Check /> Confirm
+                  <span>
+                    {selectedCount > 0
+                      ? `Add Product${selectedCount !== 1 ? "s" : ""}`
+                      : "Add Products"}
                   </span>
                 )}
               </Button>
@@ -120,10 +136,10 @@ function AddWarehouseForm({ closeSheet }: { closeSheet: () => void }) {
           </div>
         </CardHeader>
 
-        <CardContent className="overflow-y-auto p-8 lg:p-10">
+        <CardContent className="overflow-y-auto p-6">
           {errorResponse && <DisplayErrors serverErrors={serverErrors} />}
 
-          <WarehouseFormFields form={form} />
+          <SelectProducts form={form} />
         </CardContent>
       </Card>
     </form>

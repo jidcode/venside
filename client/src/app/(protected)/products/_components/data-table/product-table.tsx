@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/core/components/ui/button";
 import { useRouter } from "next/navigation";
 import {
@@ -40,13 +40,14 @@ import {
   ArrowDownNarrowWide,
   ArrowUpWideNarrow,
 } from "lucide-react";
+import DeleteMultipleProductsDialog from "../forms/delete-multiple-products";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function ProductTable<TData, TValue>({
+export function ProductTable<TData extends { id: string }, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -58,6 +59,12 @@ export function ProductTable<TData, TValue>({
     pageIndex: 0,
     pageSize: 10,
   });
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure component is mounted before initializing table
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const table = useReactTable({
     data,
@@ -80,6 +87,15 @@ export function ProductTable<TData, TValue>({
     },
   });
 
+  // Don't render until client-side hydration is complete
+  if (!isClient) {
+    return (
+      <div className="rounded-md bg-primary p-4">
+        <div className="h-96 flex items-center justify-center">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-md bg-primary p-4">
       <FilterControls table={table} />
@@ -95,23 +111,28 @@ export function ProductTable<TData, TValue>({
 }
 
 function FilterControls({ table }: { table: TableInstance<any> }) {
-  return (
-    <>
-      <div className="flex items-start gap-6 mb-4 w-full">
-        <Input
-          leftIcon={<Search className="h-4 w-4" />}
-          iconPosition="left"
-          placeholder="Search products..."
-          className="text-sm bg-primary/10 border rounded-md w-2/3 lg:w-1/3"
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-        />
+  const selectedCount = table.getSelectedRowModel().rows.length;
+  const selectedIds = table
+    .getSelectedRowModel()
+    .rows.map((row) => row.original.id);
 
+  return (
+    <div className="flex items-start gap-6 mb-4 w-full">
+      <Input
+        leftIcon={<Search className="h-4 w-4" />}
+        iconPosition="left"
+        placeholder="Search products..."
+        className="text-sm bg-primary/10 border rounded-md w-2/3 lg:w-1/3"
+        value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+        onChange={(event) =>
+          table.getColumn("name")?.setFilterValue(event.target.value)
+        }
+      />
+
+      <div className="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button size="sm" variant="outline" className="ml-auto">
               Columns
             </Button>
           </DropdownMenuTrigger>
@@ -135,8 +156,16 @@ function FilterControls({ table }: { table: TableInstance<any> }) {
               })}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {selectedCount > 0 && (
+          <DeleteMultipleProductsDialog
+            productIds={selectedIds}
+            selectedCount={selectedCount}
+            onSuccess={() => table.resetRowSelection()}
+          />
+        )}
       </div>
-    </>
+    </div>
   );
 }
 

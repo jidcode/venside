@@ -12,11 +12,11 @@ import { AlertCircle } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { WarehouseRequest } from "@/core/schema/validator";
 
-interface FormFieldsProps {
+interface ParamProps {
   form: UseFormReturn<WarehouseRequest>;
 }
 
-export default function WarehouseFormFields({ form }: FormFieldsProps) {
+export default function WarehouseFormFields({ form }: ParamProps) {
   const {
     register,
     formState: { errors, isSubmitting },

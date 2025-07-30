@@ -5,7 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { CustomLoader } from "@/core/components/elements/loader";
 import { Button } from "@/core/components/ui/button";
-import { ProductImageState, ProductState } from "@/core/schema/types";
+import {
+  ProductImageState,
+  ProductState,
+  StorageType,
+} from "@/core/schema/types";
 import { getProduct, useProductService } from "@/core/services/products";
 import { Progress } from "@/core/components/ui/progress";
 import { Badge } from "@/core/components/ui/badge";
@@ -23,13 +27,32 @@ import {
   Package,
   PenSquare,
   Star,
+  TrendingUp,
+  AlertTriangle,
+  Info,
+  Warehouse,
+  Box,
+  Container,
+  Grid3X3,
+  Layers,
+  LayoutGrid,
+  Rows,
+  Square,
+  PackageSearch,
+  ArrowRight,
 } from "lucide-react";
 import DeleteProductDialog from "../forms/delete-product";
 import { TbLabelImportant } from "react-icons/tb";
+import { PiPackage, PiWarehouse } from "react-icons/pi";
 import useCurrencyFormat from "@/core/hooks/use-currency";
 import { Label } from "@/core/components/ui/label";
 import { useState } from "react";
 import { cn } from "@/core/lib/utils";
+import {
+  RiArrowRightCircleFill,
+  RiArrowRightLine,
+  RiExchangeDollarFill,
+} from "react-icons/ri";
 
 interface ParamProps {
   productId: string;
@@ -42,62 +65,67 @@ export default function ProductDetailsPage({ productId }: ParamProps) {
 
   if (error) return <ErrorPage />;
   if (isLoading) return <CustomLoader />;
+  if (!product) return null;
 
   return (
-    <div>
-      {product && (
-        <>
-          <PageHeader product={product} />
+    <div className="space-y-6">
+      <PageHeader product={product} />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="space-y-6">
-              <ImageCard product={product} />
-              <StockCard product={product} />
-            </div>
-
-            <div className="lg:col-span-2 space-y-6">
-              <DetailsCard product={product} />
-              <PricingCard product={product} />
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <StoragesCard product={product} />
-                <CategoriesCard product={product} />
-              </div>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-8 gap-6">
+        <div className="lg:col-span-3 space-y-6 lg:sticky ">
+          <ImageCard product={product} />
+          <div className="hidden lg:block">
+            <CategoriesCard product={product} />
           </div>
-        </>
-      )}
+        </div>
+
+        <div className="lg:col-span-5 space-y-6">
+          <DetailsCard product={product} />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <PricingCard product={product} />
+            <StockCard product={product} />
+          </div>
+
+          <div className="lg:hidden">
+            <CategoriesCard product={product} />
+          </div>
+
+          <div>
+            <StoragesCard product={product} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
 function PageHeader({ product }: { product: ProductState }) {
   return (
-    <Card className="card flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-      <div>
-        <h1 className="text-2xl lg:text-3xl text-center md:text-left font-semibold tracking-tight">
-          {product.name}
-        </h1>
-        <div className="flex items-center gap-2 mt-2.5">
-          <Badge
-            variant="outline"
-            className="flex items-center gap-1 mx-auto md:mx-0"
-          >
-            <TbLabelImportant className="h-4 w-4" />
-            {product.code}
-          </Badge>
-        </div>
-      </div>
+    <Card className="card">
+      <CardContent>
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+          {/* Title Section */}
+          <div className="flex items-center gap-4 text-center lg:text-left">
+            <div>
+              <h1 className="text-2xl lg:text-4xl font-semibold tracking-tight">
+                {product.name}
+              </h1>
+            </div>
+          </div>
 
-      <div className="flex items-center gap-2">
-        <Button variant="secondary" asChild>
-          <Link href={`/products/${product.id}/edit`}>
-            <PenSquare className="size-3.5 mt-0.5" />
-            <span>Edit Product</span>
-          </Link>
-        </Button>
-        <DeleteProductDialog product={product} />
-      </div>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" asChild>
+              <Link href={`/products/${product.id}/edit`}>
+                <PenSquare className="size-3.5 mt-0.5" />
+                <span>Edit Product</span>
+              </Link>
+            </Button>
+            <DeleteProductDialog product={product} />
+          </div>
+        </div>
+      </CardContent>
     </Card>
   );
 }
@@ -126,8 +154,8 @@ function ImageCard({ product }: { product: ProductState }) {
   };
 
   return (
-    <Card className="card h-fit">
-      <CardContent>
+    <Card className="card">
+      <CardContent className="pt-0">
         <div>
           <div className="aspect-square relative mb-2.5 group">
             <Image
@@ -168,10 +196,10 @@ function ImageCard({ product }: { product: ProductState }) {
                 <button
                   key={image.id}
                   onClick={() => setSelectedImage(image)}
-                  className={`flex-shrink-0 relative w-16 h-16 rounded-md overflow-hidden border-2 transition-all hover:opacity-80 ${
+                  className={`flex-shrink-0 relative w-16 h-16 rounded-md overflow-hidden border transition-all hover:opacity-80 ${
                     currentImage?.id === image.id
-                      ? "border-focus ring-2 ring-focus/20"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-2 border-focus shadow-lg"
+                      : "border-neutral hover:border-gray-300"
                   }`}
                 >
                   <Image
@@ -198,158 +226,19 @@ function ImageCard({ product }: { product: ProductState }) {
   );
 }
 
-function StockCard({ product }: { product: ProductState }) {
-  return (
-    <Card className="card h-fit">
-      <CardContent>
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="font-medium">Total Quantity</h3>
-            <p
-              className={cn(
-                "text-2xl font-bold",
-                product.totalQuantity === 0
-                  ? "text-red-500"
-                  : product.totalQuantity <= product.restockLevel
-                  ? "text-orange-500"
-                  : "text-green-500"
-              )}
-            >
-              {product.totalQuantity}
-              <span className="text-sm font-normal"> units</span>
-            </p>
-          </div>
-          <div className="text-right">
-            <h3 className="font-medium">Status</h3>
-            <Badge
-              variant="secondary"
-              className={cn(
-                "text-white",
-                product.totalQuantity === 0
-                  ? "bg-red-500"
-                  : product.totalQuantity <= product.restockLevel
-                  ? "bg-orange-500 dark:bg-orange-600"
-                  : "bg-green-500 dark:bg-green-600"
-              )}
-            >
-              {product.totalQuantity === 0
-                ? "Out of Stock"
-                : product.totalQuantity <= product.restockLevel
-                ? "Low Stock"
-                : "In Stock"}
-            </Badge>
-          </div>
-        </div>
-
-        <Progress
-          value={
-            product.optimalLevel > 0
-              ? (product.totalQuantity / product.optimalLevel) * 100
-              : 0
-          }
-          className="mt-4 h-2"
-        />
-
-        <div className="flex justify-between text-sm text-gray-500 mt-1">
-          <span>Restock: {product.restockLevel}</span>
-          <span>Optimal: {product.optimalLevel}</span>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function DetailsCard({ product }: { product: ProductState }) {
-  return (
-    <Card className="card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-1 mb-2 text-lg">
-          <Package className="size-4" /> Details
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        <div className="lg:border-b border-neutral lg:pb-4">
-          <Label className="text-neutral">Description</Label>
-          <p className="mt-1 text-gray-800">{product.description || "N/A"}</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <Label className="text-neutral">Brand</Label>
-            <p className="mt-1">{product.brand || "N/A"}</p>
-          </div>
-          <div>
-            <Label className="text-neutral">Model</Label>
-            <p className="mt-1">{product.model || "N/A"}</p>
-          </div>
-          <div>
-            <Label className="text-neutral">Code</Label>
-            <p className="mt-1">{product.code || "N/A"}</p>
-          </div>
-          <div>
-            <Label className="text-neutral">Stock Keeping Unit</Label>
-            <p className="mt-1">{product.sku || "N/A"}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function PricingCard({ product }: { product: ProductState }) {
-  const calculateMargin = () => {
-    if (product.sellingPrice === 0) return "0.00";
-    const margin =
-      ((product.sellingPrice - product.costPrice) / product.sellingPrice) * 100;
-    return margin.toFixed(2);
-  };
-
-  const format = useCurrencyFormat();
-  return (
-    <Card className="card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-1 mb-2 text-lg">
-          <CircleDollarSign className="size-4" /> Pricing
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-destructive/5 border border-destructive text-destructive rounded-lg p-4 text-center">
-            <h3 className="text-sm font-medium mb-1">Cost Price</h3>
-            <p className="text-xl font-bold">
-              {format(product.costPrice / 100)}
-            </p>
-          </div>
-
-          <div className="bg-green-800/10 border border-green-600 text-green-600 dark:border-green-400 dark:text-green-400 rounded-lg p-4 text-center">
-            <h3 className="text-sm font-medium mb-1">Selling Price</h3>
-            <p className="text-xl font-bold">
-              {format(product.sellingPrice / 100)}
-            </p>
-          </div>
-
-          <div className="bg-focus/5 border border-focus text-focus text-lg rounded-lg p-4 text-center">
-            <h3 className="text-sm font-medium mb-1">Profit Margin</h3>
-            <p className="text-xl font-bold">{calculateMargin()}%</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 function CategoriesCard({ product }: { product: ProductState }) {
   return (
-    <Card className="card space-y-4">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-1 mb-2 text-lg">
-          <Layers2 className="size-4" /> Categories
-        </CardTitle>
+    <Card className="card">
+      <CardHeader className="mb-4">
+        <div className="flex items-center gap-2 text-xl">
+          <span className="p-1 rounded-lg bg-gray-200 text-gray-800">
+            <Layers2 className="size-5" />
+          </span>
+          <CardTitle>Categories</CardTitle>
+        </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="border border-neutral/20 p-4 rounded-lg">
         {product.categories?.length ? (
           <div className="flex flex-wrap gap-2">
             {product.categories.map((category) => (
@@ -370,29 +259,298 @@ function CategoriesCard({ product }: { product: ProductState }) {
   );
 }
 
-function StoragesCard({ product }: { product: ProductState }) {
+function DetailsCard({ product }: { product: ProductState }) {
   return (
-    <Card className="card lg:col-span-2">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-1 mb-2 text-lg">
-          <Building2 className="size-4" /> Storages
-        </CardTitle>
+    <Card className="card">
+      <CardHeader className="mb-4">
+        <div className="flex items-center gap-2 text-xl">
+          <span className="p-1 rounded-lg bg-gray-200 text-gray-800">
+            <Info className="size-5" />
+          </span>
+          <CardTitle>Product Details</CardTitle>
+        </div>
       </CardHeader>
 
       <CardContent>
-        {/* {product.storages?.length ? (
-          <div className="flex flex-wrap gap-2">
-            {product.warehouses.map((warehouse) => (
-              <Badge key={warehouse.id} variant="outline">
-                {warehouse.name}
+        <div className="p-4 rounded-lg bg-primary border border-neutral/20 space-y-6">
+          <div className="border-b border-neutral/20 pb-4">
+            <Label className="text-neutral font-semibold">Description</Label>
+            <p className="mt-2 leading-relaxed">
+              {product.description || "No description provided"}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1">
+              <Label className="text-neutral font-semibold">Brand</Label>
+              <p className="font-medium">{product.brand || "N/A"}</p>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-neutral font-semibold">Model</Label>
+              <p className="font-medium">{product.model || "N/A"}</p>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-neutral font-semibold">Code</Label>
+              <p className="font-medium">{product.code || "N/A"}</p>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-neutral font-semibold">SKU</Label>
+              <p className="font-medium">{product.sku || "N/A"}</p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PricingCard({ product }: { product: ProductState }) {
+  const format = useCurrencyFormat();
+
+  const calculateMargin = () => {
+    if (product.sellingPrice === 0) return "0.00";
+    const margin =
+      ((product.sellingPrice - product.costPrice) / product.sellingPrice) * 100;
+    return margin.toFixed(2);
+  };
+
+  const stockPercentage =
+    product.optimalLevel > 0
+      ? (product.totalQuantity / product.optimalLevel) * 100
+      : 0;
+
+  return (
+    <Card className="card">
+      <CardHeader className="mb-4">
+        <div className="flex items-center gap-2 text-xl">
+          <span className="p-1 rounded-lg bg-gray-200 text-gray-800">
+            <RiExchangeDollarFill className="size-5" />
+          </span>
+          <CardTitle>Price Details</CardTitle>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-100">
+            <div className="flex items-center gap-2">
+              <div className="size-2 rounded-full bg-red-600"></div>
+              <span className="text-sm font-medium text-red-600">
+                Cost Price
+              </span>
+            </div>
+            <span className="font-bold text-red-600">
+              {format(product.costPrice / 100)}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-100">
+            <div className="flex items-center gap-2">
+              <div className="size-2 rounded-full bg-green-800"></div>
+              <span className="text-sm font-medium text-green-800">
+                Selling Price
+              </span>
+            </div>
+            <span className="font-bold text-green-800">
+              {format(product.sellingPrice / 100)}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg bg-sky-50 border border-sky-100">
+            <div className="flex items-center gap-2">
+              <div className="size-2 rounded-full bg-sky-800"></div>
+              <span className="text-sm font-medium text-sky-800">
+                Profit Margin
+              </span>
+            </div>
+            <span className="font-bold text-sky-800">{calculateMargin()}%</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function StockCard({ product }: { product: ProductState }) {
+  const stockPercentage =
+    product.optimalLevel > 0
+      ? (product.totalQuantity / product.optimalLevel) * 100
+      : 0;
+
+  // Determine the color based on quantity level
+  const quantityColor =
+    product.totalQuantity === 0
+      ? "red"
+      : product.totalQuantity <= product.restockLevel
+      ? "amber"
+      : "green";
+
+  return (
+    <Card className="card">
+      <CardHeader className="mb-4">
+        <div className="flex items-center gap-2 text-xl">
+          <span className="p-1 rounded-lg bg-gray-200 text-gray-800">
+            <Package className="size-5" />
+          </span>
+          <CardTitle>Stock Information</CardTitle>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="font-medium text-neutral">Total Quantity</h3>
+              <p className="text-3xl font-bold">{product.totalQuantity}</p>
+            </div>
+            <div className="text-right">
+              <h3 className="font-medium text-neutral">Status</h3>
+              <Badge
+                variant="secondary"
+                className={cn(
+                  "text-white rounded-full px-3 py-1.5 mt-1",
+                  quantityColor === "red"
+                    ? "bg-red-600"
+                    : quantityColor === "amber"
+                    ? "bg-amber-500"
+                    : "bg-green-600"
+                )}
+              >
+                {quantityColor === "red"
+                  ? "Out of Stock"
+                  : quantityColor === "amber"
+                  ? "Low Stock"
+                  : "In Stock"}
               </Badge>
-            ))}
+            </div>
+          </div>
+
+          {/*  Progress Bar */}
+          <div className="mt-3">
+            <div className="w-full bg-neutral/20 h-2 rounded-full overflow-hidden">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all duration-500",
+                  quantityColor === "red"
+                    ? "bg-red-500"
+                    : quantityColor === "amber"
+                    ? "bg-amber-500"
+                    : "bg-green-600"
+                )}
+                style={{ width: `${Math.min(stockPercentage, 100)}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-between text-sm text-neutral">
+            <p>
+              Restock:
+              <span className="font-semibold ml-1 text-secondary">
+                {product.restockLevel}
+              </span>
+            </p>
+            <p>
+              Optimal:
+              <span className="font-semibold ml-1 text-secondary">
+                {product.optimalLevel}
+              </span>
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function StoragesCard({ product }: { product: ProductState }) {
+  const storages = product.storages || []; // Fallback to empty array if null/undefined
+  const totalQuantity = product.totalQuantity;
+
+  return (
+    <Card className="card">
+      <CardHeader className="mb-4">
+        <div className="flex items-center gap-2 text-xl">
+          <span className="p-1 rounded-lg bg-gray-200 text-gray-800">
+            <PiWarehouse className="size-5" />
+          </span>
+          <CardTitle>Storage Locations ({storages.length})</CardTitle>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        {storages.length === 0 ? (
+          <div className="flex flex-col lg:flex-row items-center justify-between">
+            <p className="text-neutral/80">Not stored in any warehouses</p>
+            {storages.length > 0 && (
+              <Button variant="link" asChild>
+                <Link href="/warehouses">Assign to warehouse →</Link>
+              </Button>
+            )}
           </div>
         ) : (
-          <p className="text-gray-500">No storage locations assigned</p>
-        )} */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {storages.map((storage, index) => {
+              const percentage =
+                totalQuantity > 0
+                  ? Math.round((storage.stockQuantity / totalQuantity) * 100)
+                  : 0;
 
-        <p className="text-gray-500">No storage locations assigned</p>
+              return (
+                <div
+                  key={index}
+                  className="bg-muted/40 dark:bg-white/5 p-4 rounded-lg shadow-sm hover:shadow-md hover:bg-muted dark:hover:bg-white/10 border border-neutral/20 transition"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-4">
+                      <h3 className="font-semibold text-lg">
+                        {storage.warehouse.name}
+                      </h3>
+                      <Button variant="ghost" size="icon">
+                        <Link href={`/warehouses/${storage.warehouse.id}`}>
+                          <ArrowRight />
+                        </Link>
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-xs text-neutral">
+                      <div className="flex items-center gap-1">
+                        <Warehouse className="size-3" />
+                        <span>
+                          Capacity:{" "}
+                          {storage.warehouse.capacity.toLocaleString()}{" "}
+                          {storage.warehouse.storageType.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="size-3" />
+                        <span>
+                          {(
+                            (storage.stockQuantity /
+                              storage.warehouse.capacity) *
+                            100
+                          ).toFixed(1)}
+                          % utilized
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 mt-2">
+                    <p className="text-xs uppercase font-medium tracking-wider">
+                      In Stock:
+                    </p>
+                    <div className="flex items-baseline gap-1 text-2xl font-semibold text-foreground">
+                      {storage.stockQuantity.toLocaleString()}
+                      <span className="text-sm text-neutral/90 font-medium">
+                        / {totalQuantity}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

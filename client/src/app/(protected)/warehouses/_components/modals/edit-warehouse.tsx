@@ -13,18 +13,18 @@ import {
 } from "@/core/components/ui/sheet";
 import { WarehouseRequest, warehouseSchema } from "@/core/schema/validator";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, PenSquare } from "lucide-react";
+import { PenSquare } from "lucide-react";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import WarehouseFormFields from "./form-fields";
-import { RiEdit2Fill, RiLoader2Fill } from "react-icons/ri";
+import { RiLoader2Fill } from "react-icons/ri";
 import { WarehouseState } from "@/core/schema/types";
-import { getWarehouse, useWarehouseService } from "@/core/services/warehouses";
+import { useWarehouseService } from "@/core/services/warehouses";
 import { AppError } from "@/core/lib/errors";
 import {
   DisplayErrors,
   parseServerErrors,
 } from "@/core/components/elements/error-display";
+import WarehouseFormFields from "../forms/warehouse-form-fields";
 
 export interface WarehouseParamProps {
   warehouse: WarehouseState;

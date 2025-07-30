@@ -17,7 +17,7 @@ export type DisplayErrorsProp = {
 
 export const DisplayErrors = ({
   serverErrors,
-  className = "text-destructive bg-destructive/5 px-4 py-2 my-4 border border-destructive rounded-sm w-full text-sm",
+  className = "text-destructive bg-destructive/5 px-4 py-2 my-4 rounded-md w-full text-sm",
   errorItemClassName = "space-y-1 text-center",
 }: DisplayErrorsProp) => {
   if (!serverErrors || serverErrors.length === 0) return null;

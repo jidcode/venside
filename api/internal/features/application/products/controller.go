@@ -198,6 +198,70 @@ func (c *Controller) DeleteProduct(ctx echo.Context) error {
 	return ctx.NoContent(http.StatusNoContent)
 }
 
+func (c *Controller) DeleteMultipleProducts(ctx echo.Context) error {
+	inventoryID, err := uuid.Parse(ctx.Param("inventoryId"))
+	if err != nil {
+		return errors.ValidationError("Invalid inventory ID")
+	}
+
+	type DeleteMultipleProductsRequest struct {
+		ProductIDs []string `json:"productIds" validate:"required,min=1,dive"`
+	}
+
+	var req DeleteMultipleProductsRequest
+
+	if err := ctx.Bind(&req); err != nil {
+		return errors.ValidationError("Invalid request body")
+	}
+
+	if err := ctx.Validate(&req); err != nil {
+		return errors.ValidationError(err.Error())
+	}
+
+	// Convert string UUIDs to uuid.UUID
+	productIDs := make([]uuid.UUID, len(req.ProductIDs))
+	for i, id := range req.ProductIDs {
+		pid, err := uuid.Parse(id)
+		if err != nil {
+			return errors.ValidationError("Invalid product ID format")
+		}
+		productIDs[i] = pid
+	}
+
+	// Get all images for all products before deletion
+	images, err := c.repo.GetImagesOfMultipleProducts(productIDs)
+	if err != nil {
+		return logger.Error(ctx, "Failed to get product images for cleanup", err, logrus.Fields{
+			"details":     err.Error(),
+			"product_ids": productIDs,
+		})
+	}
+
+	if err := c.repo.DeleteMultipleProducts(productIDs, inventoryID); err != nil {
+		return logger.Error(ctx, "Failed to delete products", err, logrus.Fields{
+			"details":     err.Error(),
+			"product_ids": productIDs,
+		})
+	}
+
+	// Clean up R2 storage
+	if len(images) > 0 {
+		fileKeys := make([]string, len(images))
+		for i, img := range images {
+			fileKeys[i] = img.FileKey
+		}
+
+		if err := c.bucket.DeleteFiles(fileKeys); err != nil {
+			logger.Error(ctx, "Failed to delete product images from R2", err, logrus.Fields{
+				"product_ids": productIDs,
+				"file_keys":   fileKeys,
+			})
+		}
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
+}
+
 func (c *Controller) ListProductCategories(ctx echo.Context) error {
 	inventoryID, err := uuid.Parse(ctx.Param("inventoryId"))
 	if err != nil {

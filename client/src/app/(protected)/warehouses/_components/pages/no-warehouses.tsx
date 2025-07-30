@@ -1,5 +1,5 @@
 import { PiWarehouseFill } from "react-icons/pi";
-import AddWarehouseSheet from "../forms/add-warehouse";
+import AddWarehouseSheet from "../modals/add-warehouse";
 
 export default function NoWarehousesPage() {
   return (

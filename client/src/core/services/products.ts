@@ -11,6 +11,7 @@ import {
   updateProductAction,
   deleteProductAction,
   setPrimaryImageAction,
+  deleteMultipleProductsAction,
 } from "@/server/actions/product";
 
 export function getAllProducts() {
@@ -102,6 +103,33 @@ export function useProductService() {
     }
   };
 
+  const deleteMultipleProducts = async (productIds: string[]) => {
+    try {
+      const response = await deleteMultipleProductsAction(
+        productIds,
+        inventoryId
+      );
+
+      if (response.success) {
+        await mutate(
+          data?.filter((product) => !productIds.includes(product.id)),
+          false
+        );
+
+        router.refresh();
+        return { success: true, data: response.data };
+      } else {
+        return { success: false, error: response.error };
+      }
+    } catch (error) {
+      console.error("Delete multiple products error:", error);
+      return {
+        success: false,
+        error: errorMessage(error),
+      };
+    }
+  };
+
   const setPrimaryImage = async (productId: string, imageId: string) => {
     try {
       const response = await setPrimaryImageAction(imageId, inventoryId);
@@ -144,6 +172,7 @@ export function useProductService() {
     createProduct,
     updateProduct,
     deleteProduct,
+    deleteMultipleProducts,
     setPrimaryImage,
   };
 }

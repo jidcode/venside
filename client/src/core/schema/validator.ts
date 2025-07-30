@@ -1,3 +1,4 @@
+import { Warehouse } from "lucide-react";
 import * as z from "zod";
 import { id } from "zod/v4/locales";
 
@@ -90,9 +91,13 @@ export const warehouseSchema = z.object({
     .optional(),
 });
 
-export const stockItemSchema = z.object({
-  productId: z.string().min(1, "Product ID is required"),
-  stockQuantity: z.number().int().min(0, "Stock quantity must be 0 or greater"),
+export const warehouseStockSchema = z.object({
+  stockItems: z.array(
+    z.object({
+      productId: z.string().min(1),
+      stockQuantity: z.number().int().min(0),
+    })
+  ),
 });
 
 export const productSchema = z.object({
@@ -122,15 +127,12 @@ export const productSchema = z.object({
     .min(0, "Number must be 0 or greater"),
   costPrice: z
     .number({ invalid_type_error: "Enter an amount" })
-    .int()
     .min(0, "Amount must be 0 or greater")
     .transform((val) => Math.round(val * 100)), //convert to cents
   sellingPrice: z
     .number({ invalid_type_error: "Enter an amount" })
-    .int()
     .min(0, "Amount must be 0 or greater")
     .transform((val) => Math.round(val * 100)), //convert to cents
-
   categories: z.array(z.string().min(1).max(50)).optional(),
   images: z.array(z.any()).optional(),
 });
@@ -140,7 +142,7 @@ export type RegisterRequest = z.infer<typeof registerSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type CurrencyRequest = z.infer<typeof currencySchema>;
 export type InventoryRequest = z.infer<typeof inventorySchema>;
-export type ProductRequest = z.infer<typeof productSchema>;
 export type WarehouseRequest = z.infer<typeof warehouseSchema>;
 export type StorageRequest = z.infer<typeof storageSchema>;
-export type StockItemRequest = z.infer<typeof stockItemSchema>;
+export type ProductRequest = z.infer<typeof productSchema>;
+export type WarehouseStockRequest = z.infer<typeof warehouseStockSchema>;

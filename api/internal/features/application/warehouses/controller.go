@@ -144,14 +144,27 @@ func (c *Controller) AddProductsToWarehouse(ctx echo.Context) error {
 		return errors.ValidationError("Invalid warehouse ID")
 	}
 
-	var stockItems []models.StockItemRequest
-	if err := utils.BindAndValidateRequest(ctx, &stockItems); err != nil {
+	inventoryID, err := uuid.Parse(ctx.Param("inventoryId"))
+	if err != nil {
+		return errors.ValidationError("Invalid inventory ID")
+	}
+
+	var req struct {
+		StockItems []models.StockItemRequest `json:"stockItems"`
+	}
+
+	if err := ctx.Bind(&req); err != nil {
+		return errors.ValidationError("Invalid request payload")
+	}
+
+	if err := c.validator.ValidateStockItems(req.StockItems); err != nil {
 		return err
 	}
 
-	if err := c.repo.AddProductsToWarehouse(warehouseID, stockItems); err != nil {
+	if err := c.repo.AddProductsToWarehouse(warehouseID, inventoryID, req.StockItems); err != nil {
 		return logger.Error(ctx, "Failed to add products to warehouse", err, logrus.Fields{
-			"warehouse_id": warehouseID,
+			"warehouse_id":  warehouseID,
+			"product_count": len(req.StockItems),
 		})
 	}
 

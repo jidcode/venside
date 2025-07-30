@@ -198,36 +198,38 @@ func (r *Repository) DeleteWarehouse(warehouseID uuid.UUID) error {
 }
 
 // //
-func (r *Repository) AddProductsToWarehouse(warehouseID uuid.UUID, stockItems []models.StockItemRequest) error {
+func (r *Repository) AddProductsToWarehouse(warehouseID, inventoryID uuid.UUID, items []models.StockItemRequest) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return errors.DatabaseError(err, "Error starting transaction")
 	}
 	defer tx.Rollback()
 
-	query := `
-		INSERT INTO warehouse_product_link (product_id, warehouse_id, stock_quantity)
-		VALUES (:product_id, :warehouse_id, :stock_quantity)
-		ON CONFLICT (product_id, warehouse_id) DO UPDATE 
-		SET stock_quantity = EXCLUDED.stock_quantity
-	`
+	for _, item := range items {
+		query := `
+            INSERT INTO warehouse_product_link (product_id, warehouse_id, stock_quantity)
+            VALUES (:product_id, :warehouse_id, :stock_quantity)
+            ON CONFLICT (product_id, warehouse_id) 
+            DO UPDATE SET stock_quantity = warehouse_product_link.stock_quantity + :stock_quantity
+        `
 
-	for _, item := range stockItems {
 		params := map[string]interface{}{
 			"product_id":     item.ProductID,
 			"warehouse_id":   warehouseID,
 			"stock_quantity": item.StockQuantity,
 		}
-		if _, err := tx.NamedExec(query, params); err != nil {
+
+		_, err = tx.NamedExec(query, params)
+		if err != nil {
 			return errors.DatabaseError(err, "Error adding product to warehouse")
 		}
 	}
 
-	if err := tx.Commit(); err != nil {
+	if err = tx.Commit(); err != nil {
 		return errors.DatabaseError(err, "Error committing transaction")
 	}
 
-	r.cache.Delete(warehouseCacheKey(warehouseID))
+	r.invalidateWarehouseCaches(warehouseID, inventoryID)
 	return nil
 }
 

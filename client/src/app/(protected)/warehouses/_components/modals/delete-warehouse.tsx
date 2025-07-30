@@ -11,10 +11,10 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { TbTrashX } from "react-icons/tb";
-import { WarehouseParamProps } from "./edit-warehouse";
 import { useWarehouseService } from "@/core/services/warehouses";
 import { AppError } from "@/core/lib/errors";
 import { RiLoader2Fill } from "react-icons/ri";
+import { WarehouseParamProps } from "./edit-warehouse";
 
 export default function DeleteWarehouseDialog({
   warehouse,
@@ -49,11 +49,10 @@ export default function DeleteWarehouseDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="secondary"
-          className="bg-destructive hover:bg-red-500 hover:text-red-50"
+          size="icon"
+          className="bg-destructive hover:bg-red-500 hover:text-red-50 h-10 w-10 rounded-md"
         >
-          <TbTrashX className="size-4" />
-          <span>Delete</span>
+          <TbTrashX className="size-5" />
         </Button>
       </DialogTrigger>
 

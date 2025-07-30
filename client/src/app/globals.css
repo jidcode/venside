@@ -17,7 +17,7 @@
   }
 
   .card {
-    @apply bg-primary border border-neutral/20 shadow-xs rounded-lg p-6;
+    @apply bg-primary border border-muted shadow-xs rounded-lg p-4 xl:p-6;
   }
 }
 

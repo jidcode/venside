@@ -2,6 +2,7 @@ package warehouses
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"github.com/app/venside/internal/models"
@@ -54,4 +55,47 @@ func (v *WarehouseValidator) warehouseNameExists(warehouseName string, inventory
 		return false, err
 	}
 	return exists, nil
+}
+
+func (v *WarehouseValidator) ValidateStockItems(items []models.StockItemRequest) error {
+	var errorMessages []string
+
+	for _, item := range items {
+		// Check product exists and get details
+		var product struct {
+			Name          string `db:"name"`
+			TotalQuantity int    `db:"total_quantity"`
+		}
+
+		err := v.db.Get(&product,
+			"SELECT name, total_quantity FROM products WHERE id = $1", item.ProductID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				errorMessages = append(errorMessages,
+					fmt.Sprintf("Product with ID %s not found", item.ProductID))
+			} else {
+				return errors.DatabaseError(err, "Error validating product")
+			}
+			continue
+		}
+
+		// Check if requested quantity exceeds total product quantity
+		if item.StockQuantity > product.TotalQuantity {
+			errorMessages = append(errorMessages,
+				fmt.Sprintf("Warehouse stock quantity for product \"%s\" cannot exceed its total available quantity",
+					product.Name))
+		}
+
+		// Check for negative quantities
+		if item.StockQuantity < 0 {
+			errorMessages = append(errorMessages,
+				fmt.Sprintf("Stock quantity cannot be negative for product \"%s\"", product.Name))
+		}
+	}
+
+	if len(errorMessages) > 0 {
+		return errors.ValidationError(strings.Join(errorMessages, "; "))
+	}
+
+	return nil
 }

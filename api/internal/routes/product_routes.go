@@ -22,6 +22,7 @@ func ProductRoutes(e *echo.Echo, controller products.ProductController, service 
 	prdGroup.POST("", controller.CreateProduct)
 	prdGroup.PUT("/:id", controller.UpdateProduct)
 	prdGroup.DELETE("/:id", controller.DeleteProduct)
+	prdGroup.DELETE("", controller.DeleteMultipleProducts)
 
 	imgGroup := api.Group("/images")
 	imgGroup.Use(auth.CSRFMiddleware(service))
