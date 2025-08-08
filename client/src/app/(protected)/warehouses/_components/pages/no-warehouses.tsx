@@ -6,7 +6,7 @@ export default function NoWarehousesPage() {
     <div className="flex flex-col items-center justify-center bg-primary text-secondary min-h-[80vh] text-center p-6 rounded-md">
       <PiWarehouseFill size={90} className="mb-6 text-neutral" />
 
-      <h2 className="text-2xl lg:text-3xl font-bold mb-4">
+      <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-neutral">
         No Warehouses Found
       </h2>
 

@@ -46,11 +46,6 @@ export const inventorySchema = z.object({
   currency: currencySchema,
 });
 
-export const storageSchema = z.object({
-  warehouseId: z.string().min(1, "Warehouse ID is required"),
-  stockQuantity: z.number().int().min(0, "Stock quantity must be 0 or greater"),
-});
-
 export const warehouseSchema = z.object({
   name: z
     .string()
@@ -85,19 +80,53 @@ export const warehouseSchema = z.object({
     .string()
     .max(100, "Manager name must not exceed 100 characters")
     .optional(),
-  contact: z
+  phone: z
     .string()
     .max(20, "Phone number must not exceed 20 characters")
     .optional(),
+  email: z
+    .string()
+    .max(100, "Email must not exceed 100 characters")
+    .email("Please enter a valid email address")
+    .optional()
+    .or(z.literal("")),
 });
 
-export const warehouseStockSchema = z.object({
+export const addStockSchema = z.object({
   stockItems: z.array(
     z.object({
       productId: z.string().min(1),
-      stockQuantity: z.number().int().min(0),
+      quantityInStock: z.number().int().min(0),
     })
   ),
+});
+
+export const transferStockSchema = z.object({
+  fromWarehouseId: z.string().min(1, "Source warehouse is required"),
+  toWarehouseId: z.string().min(1, "Destination warehouse is required"),
+  transferItems: z
+    .array(
+      z.object({
+        productId: z.string().min(1),
+        transferQuantity: z
+          .number()
+          .int()
+          .min(1, "Transfer quantity must be at least 1"),
+      })
+    )
+    .min(1, "At least one product must be selected for transfer"),
+});
+
+export const updateStockQuantitySchema = z.object({
+  newQuantity: z
+    .number({ invalid_type_error: "Enter a valid number" })
+    .int("Quantity must be a whole number")
+    .min(0, "Quantity cannot be negative"),
+});
+
+export const storageSchema = z.object({
+  warehouseId: z.string().min(1, "Warehouse ID is required"),
+  quantityInStock: z.number().int().min(0, "Quantity must be 0 or greater"),
 });
 
 export const productSchema = z.object({
@@ -114,6 +143,10 @@ export const productSchema = z.object({
     .max(200, "Description must not exceed 200 characters")
     .optional(),
   totalQuantity: z
+    .number({ invalid_type_error: "Enter a number" })
+    .int()
+    .min(0, "Number must be 0 or greater"),
+  totalStock: z
     .number({ invalid_type_error: "Enter a number" })
     .int()
     .min(0, "Number must be 0 or greater"),
@@ -145,4 +178,8 @@ export type InventoryRequest = z.infer<typeof inventorySchema>;
 export type WarehouseRequest = z.infer<typeof warehouseSchema>;
 export type StorageRequest = z.infer<typeof storageSchema>;
 export type ProductRequest = z.infer<typeof productSchema>;
-export type WarehouseStockRequest = z.infer<typeof warehouseStockSchema>;
+export type AddStockRequest = z.infer<typeof addStockSchema>;
+export type TransferStockRequest = z.infer<typeof transferStockSchema>;
+export type UpdateStockQuantityRequest = z.infer<
+  typeof updateStockQuantitySchema
+>;

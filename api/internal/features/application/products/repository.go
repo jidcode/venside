@@ -34,7 +34,7 @@ func categoryListCacheKey(inventoryID uuid.UUID) string {
 }
 
 const (
-	TTL = 30 * 24 * time.Hour // 30 days
+	TTL = 30 * 24 * time.Hour
 )
 
 // Product operations
@@ -93,66 +93,20 @@ func (r *Repository) GetProductWithDetails(productID uuid.UUID) (models.Product,
 		return product, err
 	}
 
-	// Images
-	var images []models.ProductImage
-	err = r.db.Select(&images, `
-		SELECT * FROM product_images 
-		WHERE product_id = $1 
-		ORDER BY is_primary DESC, created_at ASC
-	`, productID)
-	if err != nil {
-		return product, errors.DatabaseError(err, "Error fetching product images")
-	}
-	product.Images = images
-
-	// Categories
-	var categories []models.ProductCategory
-	err = r.db.Select(&categories, `
-		SELECT pc.* FROM product_categories pc
-		JOIN product_category_link pcm ON pc.id = pcm.category_id
-		WHERE pcm.product_id = $1
-	`, productID)
-	if err != nil {
-		return product, errors.DatabaseError(err, "Error fetching product categories")
-	}
-	product.Categories = categories
-
-	// Warehouses
-	var warehousesWithStock []models.WarehouseWithStock
-	query := `
-		SELECT 
-			w.id, w.name, w.location, w.capacity, w.storage_type,
-			w.manager, w.contact, w.created_at,	w.updated_at, 
-			wpl.stock_quantity
-		FROM warehouse_product_link wpl
-		JOIN warehouses w ON wpl.warehouse_id = w.id
-		WHERE wpl.product_id = $1
-	`
-	err = r.db.Select(&warehousesWithStock, query, productID)
-	if err != nil {
-		return product, errors.DatabaseError(err, "Error fetching warehouse stock")
+	// Get product images
+	if err := r.loadProductImages(&product); err != nil {
+		return product, err
 	}
 
-	var storages []models.Storage
-	for _, wws := range warehousesWithStock {
-		storages = append(storages, models.Storage{
-			ProductID:     productID,
-			WarehouseID:   wws.ID,
-			StockQuantity: wws.StockQuantity,
-			Warehouse: models.Warehouse{
-				ID:          wws.ID,
-				Name:        wws.Name,
-				Location:    wws.Location,
-				Capacity:    wws.Capacity,
-				StorageType: wws.StorageType,
-				Manager:     wws.Manager,
-				Contact:     wws.Contact,
-				CreatedAt:   wws.CreatedAt,
-				UpdatedAt:   wws.UpdatedAt,
-			},
-		})
+	// Get product categories
+	if err := r.loadProductCategories(&product); err != nil {
+		return product, err
 	}
-	product.Storages = storages
+
+	// Get warehouse stock
+	if err := r.loadWarehouseStock(&product); err != nil {
+		return product, err
+	}
 
 	return product, nil
 }
@@ -165,25 +119,24 @@ func (r *Repository) CreateProduct(product *models.Product, categories []string)
 	defer tx.Rollback()
 
 	query := `
-        INSERT INTO products (
-            id, name, code, sku, brand, model, description,
-            total_quantity, restock_level, optimal_level,
-            cost_price, selling_price, inventory_id,
-            created_at, updated_at
-        ) VALUES (
-            :id, :name, :code, :sku, :brand, :model, :description,
-            :total_quantity, :restock_level, :optimal_level,
-            :cost_price, :selling_price, :inventory_id,
-            :created_at, :updated_at
-        )
-    `
+		INSERT INTO products (
+			id, name, code, sku, brand, model, description,
+			total_quantity, total_stock, restock_level, optimal_level,
+			cost_price, selling_price, inventory_id,
+			created_at, updated_at
+		) VALUES (
+			:id, :name, :code, :sku, :brand, :model, :description,
+			:total_quantity, :total_stock, :restock_level, :optimal_level,
+			:cost_price, :selling_price, :inventory_id,
+			:created_at, :updated_at
+		)
+	`
 	_, err = tx.NamedExec(query, product)
 	if err != nil {
 		return errors.DatabaseError(err, "Error creating product")
 	}
 
-	err = r.handleProductCategories(tx, product.ID, product.InventoryID, categories)
-	if err != nil {
+	if err := r.handleProductCategories(tx, product.ID, product.InventoryID, categories); err != nil {
 		return err
 	}
 
@@ -202,7 +155,6 @@ func (r *Repository) UpdateProduct(product *models.Product, categories []string)
 	}
 	defer tx.Rollback()
 
-	// Update basic product details
 	query := `
 		UPDATE products SET 
 			name = :name,
@@ -212,6 +164,7 @@ func (r *Repository) UpdateProduct(product *models.Product, categories []string)
 			model = :model,
 			description = :description,
 			total_quantity = :total_quantity,
+			total_stock = :total_stock,
 			restock_level = :restock_level,
 			optimal_level = :optimal_level,
 			cost_price = :cost_price,
@@ -224,19 +177,9 @@ func (r *Repository) UpdateProduct(product *models.Product, categories []string)
 		return errors.DatabaseError(err, "Error updating product")
 	}
 
-	// Always remove existing category links
-	deleteQuery := `DELETE FROM product_category_link WHERE product_id = $1`
-	_, err = tx.Exec(deleteQuery, product.ID)
-	if err != nil {
-		return errors.DatabaseError(err, "Error removing existing category links")
-	}
-
-	// Only add new links if categories are provided
-	if len(categories) > 0 {
-		err = r.handleProductCategories(tx, product.ID, product.InventoryID, categories)
-		if err != nil {
-			return err
-		}
+	// Update categories
+	if err := r.updateProductCategories(tx, product.ID, product.InventoryID, categories); err != nil {
+		return err
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -260,7 +203,6 @@ func (r *Repository) DeleteProduct(productID uuid.UUID) error {
 	}
 
 	r.invalidateProductCaches(productID, product.InventoryID)
-
 	return nil
 }
 

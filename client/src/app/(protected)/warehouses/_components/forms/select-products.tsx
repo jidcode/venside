@@ -2,44 +2,56 @@
 
 import { Input } from "@/core/components/ui/input";
 import { Checkbox } from "@/core/components/ui/checkbox";
-import { getAllProducts } from "@/core/services/products";
-import { WarehouseStockRequest } from "@/core/schema/validator";
-import { UseFormReturn, useFieldArray } from "react-hook-form";
-import { useMemo, useState, useEffect } from "react";
 import { ScrollArea } from "@/core/components/ui/scroll-area";
+import { getAllProducts } from "@/core/services/products";
+import { AddStockRequest } from "@/core/schema/validator";
+import { ProductState } from "@/core/schema/types";
+import { UseFormReturn, useFieldArray } from "react-hook-form";
+import { useState, useEffect } from "react";
 import { Search, Package, Dot } from "lucide-react";
+import { getWarehouse } from "@/core/services/warehouses";
 
-interface ParamProps {
-  form: UseFormReturn<WarehouseStockRequest>;
+interface SelectProductsProps {
+  form: UseFormReturn<AddStockRequest>;
+  warehouseId: string;
 }
 
-export default function SelectProducts({ form }: ParamProps) {
+export default function SelectProducts({
+  form,
+  warehouseId,
+}: SelectProductsProps) {
   const { data: products = [] } = getAllProducts();
-  const [search, setSearch] = useState("");
+  const { data: warehouse } = getWarehouse(warehouseId);
 
+  const [search, setSearch] = useState("");
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "stockItems",
   });
 
-  const watchedStockItems = form.watch("stockItems");
+  const selectedItems = form.watch("stockItems");
 
-  const filteredProducts = useMemo(() => {
-    return products.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [products, search]);
+  const stockIds = warehouse?.stockItems?.map((item) => item.product.id) || [];
+
+  const filteredProducts = products.filter(
+    (product) =>
+      !stockIds.includes(product.id) &&
+      product.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
       <SearchBar search={search} setSearch={setSearch} />
-
-      <SelectionSummary fields={fields} watchedStockItems={watchedStockItems} />
-
+      {fields.length > 0 && (
+        <SelectionSummary
+          fieldsCount={fields.length}
+          selectedItems={selectedItems}
+        />
+      )}
       <ProductsTable
         products={filteredProducts}
+        selectedItems={selectedItems}
         fields={fields}
-        watchedStockItems={watchedStockItems}
         append={append}
         remove={remove}
         form={form}
@@ -53,14 +65,13 @@ function SearchBar({
   setSearch,
 }: {
   search: string;
-  setSearch: (value: string) => void;
+  setSearch: (val: string) => void;
 }) {
   return (
     <div className="space-y-2">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral h-4 w-4" />
         <Input
-          id="search"
           placeholder="Search by product name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -72,135 +83,114 @@ function SearchBar({
 }
 
 function SelectionSummary({
-  fields,
-  watchedStockItems,
+  fieldsCount,
+  selectedItems,
 }: {
-  fields: any[];
-  watchedStockItems: any[];
+  fieldsCount: number;
+  selectedItems: AddStockRequest["stockItems"];
 }) {
-  if (fields.length === 0) return null;
+  const totalItems = selectedItems.reduce(
+    (sum, item) => sum + (item.quantityInStock || 0),
+    0
+  );
 
   return (
-    <div className="bg-accent/20 rounded-md p-2.5 pr-6  text-focus">
+    <div className="bg-accent/20 rounded-md p-2.5 pr-6 text-focus">
       <div className="flex items-center justify-between text-sm font-medium">
         <div className="flex items-center">
           <Dot className="size-8" />
           <span>
-            {fields.length} product{fields.length !== 1 ? "s" : ""} selected
+            {fieldsCount} product{fieldsCount !== 1 ? "s" : ""} selected
           </span>
         </div>
-        <div>
-          Total items:{" "}
-          {watchedStockItems?.reduce(
-            (sum, item) => sum + (item.stockQuantity || 0),
-            0
-          ) || 0}
-        </div>
+        <div>Total items: {totalItems}</div>
       </div>
     </div>
   );
 }
 
+interface ProductsTableProps {
+  products: ProductState[];
+  selectedItems: AddStockRequest["stockItems"];
+  fields: { id: string; productId: string }[];
+  append: (item: AddStockRequest["stockItems"][0]) => void;
+  remove: (index: number) => void;
+  form: UseFormReturn<AddStockRequest>;
+}
+
 function ProductsTable({
   products,
+  selectedItems,
   fields,
-  watchedStockItems,
   append,
   remove,
   form,
-}: {
-  products: any[];
-  fields: any[];
-  watchedStockItems: any[];
-  append: (value: any) => void;
-  remove: (index: number) => void;
-  form: UseFormReturn<WarehouseStockRequest>;
-}) {
-  const isSelected = (productId: string) =>
-    fields.some((item) => item.productId === productId);
+}: ProductsTableProps) {
+  const isSelected = (id: string) => fields.some((f) => f.productId === id);
+  const findIndex = (id: string) => fields.findIndex((f) => f.productId === id);
+  const getQty = (id: string) =>
+    selectedItems.find((s) => s.productId === id)?.quantityInStock ?? 1;
 
-  const handleSelect = (productId: string, isOutOfStock: boolean) => {
-    if (isOutOfStock) return;
-
-    if (isSelected(productId)) {
-      const index = fields.findIndex((item) => item.productId === productId);
-      remove(index);
-    } else {
-      append({ productId, stockQuantity: 1 });
-    }
+  const handleToggle = (id: string, isOut: boolean) => {
+    if (isOut) return;
+    isSelected(id)
+      ? remove(findIndex(id))
+      : append({ productId: id, quantityInStock: 1 });
   };
 
-  const getStockQuantity = (productId: string): number => {
-    const item = watchedStockItems?.find(
-      (item) => item.productId === productId
-    );
-    return item?.stockQuantity ?? 1;
-  };
+  const handleQtyChange = (id: string, value: string, finalize = false) => {
+    const index = findIndex(id);
+    if (index === -1) return;
 
-  const updateQuantity = (productId: string, value: string) => {
-    const index = fields.findIndex((item) => item.productId === productId);
-    if (index !== -1) {
-      // Allow empty string during editing
-      const quantity = value === "" ? 0 : parseInt(value) || 0;
-      form.setValue(`stockItems.${index}.stockQuantity`, quantity);
-    }
-  };
+    let quantity = value === "" ? 0 : parseInt(value) || 0;
+    if (finalize) quantity = Math.max(1, quantity);
 
-  const finalizeQuantity = (productId: string, value: string) => {
-    const index = fields.findIndex((item) => item.productId === productId);
-    if (index !== -1) {
-      // Ensure minimum value of 1 when editing is complete
-      const quantity = value === "" ? 1 : parseInt(value) || 1;
-      const finalQuantity = Math.max(1, quantity);
-      form.setValue(`stockItems.${index}.stockQuantity`, finalQuantity);
-    }
+    form.setValue(`stockItems.${index}.quantityInStock`, quantity);
   };
 
   return (
     <div className="bg-primary rounded-lg border border-neutral/40 overflow-hidden">
       <header className="px-6 py-4 bg-foreground/80 text-primary">
         <div className="grid grid-cols-12 gap-4 text-xs font-semibold uppercase tracking-wide">
-          <div className="col-span-1"></div>
+          <div className="col-span-1" />
           <div className="col-span-5">Products</div>
           <div className="col-span-3">Total Qty</div>
           <div className="col-span-3">Stock Qty</div>
         </div>
       </header>
 
-      <ScrollArea className="max-h-[500px]">
-        <div className="divide-y divide-neutral/40">
-          {products.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-neutral">
-              <Package className="h-12 w-12 mb-3 text-neutral/50" />
-              <p className="text-lg font-medium">No products found</p>
-              <p className="text-sm mt-1">Try adjusting your search criteria</p>
-            </div>
-          ) : (
-            products.map((product) => (
-              <ProductRow
-                key={product.id}
-                product={product}
-                selected={isSelected(product.id)}
-                stockQuantity={getStockQuantity(product.id)}
-                onSelect={handleSelect}
-                onQuantityChange={updateQuantity}
-                onQuantityBlur={finalizeQuantity}
-              />
-            ))
-          )}
-        </div>
+      <ScrollArea className="max-h-[500px] divide-y divide-neutral/40">
+        {products.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-neutral">
+            <Package className="h-12 w-12 mb-3 text-neutral/50" />
+            <p className="text-lg font-medium">No products found</p>
+            <p className="text-sm mt-1">Try adjusting your search criteria</p>
+          </div>
+        ) : (
+          products.map((product) => (
+            <ProductRow
+              key={product.id}
+              product={product}
+              selected={isSelected(product.id)}
+              stockQuantity={getQty(product.id)}
+              onSelect={handleToggle}
+              onQuantityChange={(val) => handleQtyChange(product.id, val)}
+              onQuantityBlur={(val) => handleQtyChange(product.id, val, true)}
+            />
+          ))
+        )}
       </ScrollArea>
     </div>
   );
 }
 
 interface ProductRowProps {
-  product: any;
+  product: ProductState;
   selected: boolean;
   stockQuantity: number;
-  onSelect: (productId: string, isOutOfStock: boolean) => void;
-  onQuantityChange: (productId: string, value: string) => void;
-  onQuantityBlur: (productId: string, value: string) => void;
+  onSelect: (id: string, isOut: boolean) => void;
+  onQuantityChange: (val: string) => void;
+  onQuantityBlur: (val: string) => void;
 }
 
 function ProductRow({
@@ -214,28 +204,13 @@ function ProductRow({
   const [inputValue, setInputValue] = useState(stockQuantity.toString());
   const isOutOfStock = product.totalQuantity === 0;
 
-  // Sync with parent state when stockQuantity changes
   useEffect(() => {
     setInputValue(stockQuantity.toString());
   }, [stockQuantity]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Allow empty string or positive numbers
-    if (value === "" || /^\d*$/.test(value)) {
-      setInputValue(value);
-      onQuantityChange(product.id, value);
-    }
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    onQuantityBlur(product.id, value);
-  };
-
   return (
     <div
-      className={`grid grid-cols-12 gap-4 px-6 py-4 hover:bg-muted/80 transition-all duration-200 group ${
+      className={`grid grid-cols-12 gap-4 px-6 py-4 group hover:bg-muted/80 transition-all duration-200 ${
         selected ? "bg-muted/25 border-l-4 border-focus/80" : ""
       } ${isOutOfStock ? "opacity-50 cursor-not-allowed" : ""}`}
     >
@@ -253,19 +228,22 @@ function ProductRow({
       <div className="col-span-5 flex items-center">
         <div className="min-w-0">
           <p className="text-sm font-medium truncate">{product.name}</p>
-          <p className="text-xs text-neutral/60 font-medium">{product.code}</p>
+          <p className="text-xs text-neutral/50 font-medium">{product.code}</p>
         </div>
       </div>
 
       <div className="col-span-3 flex items-center">
-        {product.totalQuantity === 0 ? (
-          <div className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+        {isOutOfStock ? (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
             Out of stock
-          </div>
+          </span>
         ) : (
-          <div className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 dark:text-green-300 dark:bg-green-800/20">
-            {product.totalQuantity}
-          </div>
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-lg font-semibold">
+            {product.totalQuantity - product.totalStock}{" "}
+            <span className="ml-1 text-sm text-neutral/50 mt-0.5">
+              / {product.totalQuantity}
+            </span>
+          </span>
         )}
       </div>
 
@@ -276,8 +254,14 @@ function ProductRow({
               type="number"
               min={1}
               value={inputValue}
-              onChange={handleChange}
-              onBlur={handleBlur}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "" || /^\d*$/.test(val)) {
+                  setInputValue(val);
+                  onQuantityChange(val);
+                }
+              }}
+              onBlur={(e) => onQuantityBlur(e.target.value)}
               className="h-8 text-sm border-neutral focus:border-accent focus:ring-1 focus:ring-focus transition-all duration-200"
               placeholder="Min: 1"
             />

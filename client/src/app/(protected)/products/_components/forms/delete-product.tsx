@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/core/components/ui/dialog";
+import { errorToast } from "@/core/lib/utils";
 import { ProductState } from "@/core/schema/types";
 import { useProductService } from "@/core/services/products";
 import { useRouter } from "next/navigation";
@@ -35,11 +36,11 @@ export default function DeleteProductDialog({ product }: ProductParamProps) {
         router.push("/products");
       } else if (response?.error) {
         setOpen(false);
-        toast(response?.error.message || "Failed to delete product");
+        errorToast(response?.error.message || "Failed to delete product");
       }
     } catch (error) {
       console.error("Failed to delete product:", error);
-      toast("Failed to delete product. Please try again.");
+      errorToast("Failed to delete product. Please try again.");
     } finally {
       setIsDeleting(false);
     }

@@ -34,7 +34,6 @@ import {
 import AddStockItemSheet from "../modals/add-stock-items";
 import DeleteWarehouseDialog from "../modals/delete-warehouse";
 import EditWarehouseSheet from "../modals/edit-warehouse";
-import RemoveStockItemSheet from "../modals/remove-stock-items";
 import TransferProductsSheet from "../modals/transfer-stock-items";
 import useCurrencyFormat from "@/core/hooks/use-currency";
 import { Badge } from "@/core/components/ui/badge";
@@ -44,6 +43,8 @@ import { cn } from "@/core/lib/utils";
 import { getAllProducts } from "@/core/services/products";
 import { Input } from "@/core/components/ui/input";
 import { useState, useMemo } from "react";
+import RemoveProductDialog from "../modals/remove-stock-item";
+import UpdateStockQuantityDialog from "../modals/update-stock-quantity";
 
 export default function WarehouseDetailsPage({
   warehouseId,
@@ -51,7 +52,6 @@ export default function WarehouseDetailsPage({
   warehouseId: string;
 }) {
   const { data: warehouse, isLoading, error } = getWarehouse(warehouseId);
-  console.log(warehouse);
 
   if (error) return <ErrorPage />;
   if (isLoading) return <CustomLoader />;
@@ -62,16 +62,12 @@ export default function WarehouseDetailsPage({
       <PageHeader warehouse={warehouse} />
 
       <div className="grid grid-cols-1 lg:grid-cols-8 gap-6 items-stretch">
-        {" "}
-        {/* Added items-stretch */}
         <div className="lg:col-span-2 space-y-6">
           <OverviewCard warehouse={warehouse} />
           <StockAlertsCard warehouse={warehouse} />
           <ContactCard warehouse={warehouse} />
         </div>
         <div className="lg:col-span-6 min-h-fit">
-          {" "}
-          {/* Changed here */}
           <StockItemsCard warehouse={warehouse} />
         </div>
       </div>
@@ -115,7 +111,7 @@ function PageHeader({ warehouse }: { warehouse: WarehouseState }) {
 function OverviewCard({ warehouse }: { warehouse: WarehouseState }) {
   const totalStock =
     warehouse.stockItems?.reduce(
-      (sum, item) => sum + (item.stockQuantity || 0),
+      (sum, item) => sum + (item.quantityInStock || 0),
       0
     ) || 0;
 
@@ -242,12 +238,12 @@ function StockAlertsCard({ warehouse }: { warehouse: WarehouseState }) {
   const lowStockItems =
     warehouse.stockItems?.filter(
       (item) =>
-        item.stockQuantity <= item.product.restockLevel &&
-        item.stockQuantity > 0
+        item.quantityInStock <= item.product.restockLevel &&
+        item.quantityInStock > 0
     ).length || 0;
 
   const outOfStockItems =
-    warehouse.stockItems?.filter((item) => item.stockQuantity === 0).length ||
+    warehouse.stockItems?.filter((item) => item.quantityInStock === 0).length ||
     0;
 
   return (
@@ -309,7 +305,12 @@ function ContactCard({ warehouse }: { warehouse: WarehouseState }) {
 
           <div className="space-y-1">
             <Label className="text-neutral font-semibold">Phone</Label>
-            <p className="font-medium">{warehouse.contact || "Not provided"}</p>
+            <p className="font-medium">{warehouse.phone || "Not provided"}</p>
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-neutral font-semibold">Email</Label>
+            <p className="font-medium">{warehouse.email || "Not provided"}</p>
           </div>
         </div>
       </CardContent>
@@ -319,7 +320,6 @@ function ContactCard({ warehouse }: { warehouse: WarehouseState }) {
 
 function StockItemsCard({ warehouse }: { warehouse: WarehouseState }) {
   const stockItems = warehouse.stockItems;
-  const { data: products } = getAllProducts();
 
   // Search and pagination state
   const [searchQuery, setSearchQuery] = useState("");
@@ -389,8 +389,7 @@ function StockItemsCard({ warehouse }: { warehouse: WarehouseState }) {
 
           <div className="flex flex-wrap items-center gap-2">
             <AddStockItemSheet warehouseId={warehouse.id} />
-            <RemoveStockItemSheet warehouseId={warehouse.id} />
-            <TransferProductsSheet />
+            <TransferProductsSheet warehouseId={warehouse.id} />
           </div>
         </div>
       </CardHeader>
@@ -423,7 +422,7 @@ function StockItemsCard({ warehouse }: { warehouse: WarehouseState }) {
             <div className="p-6 rounded-full bg-neutral/5 mb-6">
               <PiEmpty className="text-neutral/80 size-16" />
             </div>
-            <h2 className="text-2xl lg:text-3xl font-semibold mb-2">
+            <h2 className="text-2xl lg:text-3xl font-semibold mb-2 text-neutral">
               Warehouse Empty
             </h2>
             <p className="mb-6 max-w-md leading-relaxed text-neutral">
@@ -557,7 +556,7 @@ function ProductCard({ item }: { item: StockItemState }) {
   const format = useCurrencyFormat();
 
   const getStockStatus = () => {
-    const quantity = item.stockQuantity;
+    const quantity = item.quantityInStock;
     const restockLevel = item.product.restockLevel;
 
     if (quantity === 0) {
@@ -590,103 +589,93 @@ function ProductCard({ item }: { item: StockItemState }) {
   const stockStatus = getStockStatus();
 
   const stockPercentage = Math.min(
-    (item.stockQuantity / item.product.optimalLevel) * 100,
+    (item.quantityInStock / item.product.optimalLevel) * 100,
     100
   );
 
   return (
     <Card className="card border-neutral/25 hover:shadow-md dark:bg-muted/20 hover:border-focus transition-shadow">
-      <Link href={`/products/${item.product.id}`} className="block h-full">
-        <CardContent>
+      <CardContent>
+        <div>
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div
+              className={`rounded-full text-xs font-medium py-1 px-2.5 ${stockStatus.textColor} ${stockStatus.bgColor} flex items-center gap-1 shrink`}
+            >
+              <div className={`size-2 rounded-full ${stockStatus.color}`}></div>
+              {stockStatus.label}
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Ellipsis className="size-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={`/products/${item.product.id}`}
+                    className="flex items-center gap-2"
+                  >
+                    <Eye className="size-4" />
+                    View Details
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                  <UpdateStockQuantityDialog stockItem={item} />
+                </DropdownMenuItem>
+
+                <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                  <RemoveProductDialog product={item.product} />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Product Name */}
           <div>
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div
-                className={`rounded-full text-xs font-medium py-1 px-2.5 ${stockStatus.textColor} ${stockStatus.bgColor} flex items-center gap-1 shrink`}
-              >
+            <h3 className="font-semibold text-lg my-2">{item.product.name}</h3>
+
+            {/* Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-neutral">
+                <span>Stock Level</span>
+                <span>
+                  {item.quantityInStock}/{item.product.optimalLevel}
+                </span>
+              </div>
+              <div className="w-full bg-neutral/20 h-2 rounded-full overflow-hidden">
                 <div
-                  className={`size-2 rounded-full ${stockStatus.color}`}
-                ></div>
-                {stockStatus.label}
-              </div>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Ellipsis className="size-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={`/products/${item.product.id}`}
-                      className="flex items-center gap-2"
-                    >
-                      <Eye className="size-4" />
-                      View Details
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <button className="flex items-center gap-2">
-                      <Settings2 className="size-4" />
-                      Update Stock
-                    </button>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <button className="flex items-center gap-2">
-                      <PackageX className="size-4" />
-                      Remove Product
-                    </button>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            {/* Product Name */}
-            <div>
-              <h3 className="font-semibold text-lg my-2">
-                {item.product.name}
-              </h3>
-
-              {/* Progress Bar */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-neutral">
-                  <span>Stock Level</span>
-                  <span>
-                    {item.stockQuantity}/{item.product.optimalLevel}
-                  </span>
-                </div>
-                <div className="w-full bg-neutral/20 h-2 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${stockStatus.color}`}
-                    style={{ width: `${Math.max(stockPercentage, 2)}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="flex justify-between items-center pt-6">
-              <div className="text-center">
-                <Label className="text-xs text-neutral font-semibold">
-                  PRICE
-                </Label>
-                <p className="font-semibold">
-                  {format(item.product.sellingPrice / 100)}
-                </p>
-              </div>
-              <div className="text-center">
-                <Label className="text-xs text-neutral font-semibold">
-                  IN STOCK
-                </Label>
-                <p className="font-semibold text-lg">
-                  {item.stockQuantity.toLocaleString()}
-                </p>
+                  className={`h-full rounded-full transition-all duration-500 ${stockStatus.color}`}
+                  style={{ width: `${Math.max(stockPercentage, 2)}%` }}
+                />
               </div>
             </div>
           </div>
-        </CardContent>
-      </Link>
+
+          {/* Stats */}
+          <div className="flex justify-between items-center pt-6">
+            <div className="text-center">
+              <Label className="text-xs text-neutral font-semibold">
+                PRICE
+              </Label>
+              <p className="font-semibold">
+                {format(item.product.sellingPrice / 100)}
+              </p>
+            </div>
+            <div className="text-center">
+              <Label className="text-xs text-neutral font-semibold">
+                IN STOCK
+              </Label>
+              <p className="font-semibold text-lg">
+                {item.quantityInStock.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
     </Card>
   );
 }

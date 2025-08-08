@@ -39,7 +39,7 @@ export const productColumns: ColumnDef<ProductState>[] = [
         product.images?.find((img) => img.isPrimary) || product.images?.[0];
 
       return (
-        <div className="relative w-12 h-12 rounded-md overflow-hidden border bg-muted">
+        <div className="relative w-16 h-16 rounded-md overflow-hidden border bg-muted">
           <Image
             src={primaryImage?.url || "/placeholder.jpg"}
             alt={product.name}
@@ -58,11 +58,19 @@ export const productColumns: ColumnDef<ProductState>[] = [
     enableSorting: true,
     cell: ({ row }) => {
       const name = row.getValue("name") as string;
+      const brand = row.original.brand;
+      const model = row.original.model;
+
       return (
         <div className="max-w-60 min-w-40 h-full overflow-hidden">
           <p className="font-medium line-clamp-2 text-ellipsis break-words">
             {name}
           </p>
+          {(brand || model) && (
+            <p className="text-xs mt-0.5 text-neutral line-clamp-1">
+              {[brand, model].filter(Boolean).join(" • ")}
+            </p>
+          )}
         </div>
       );
     },

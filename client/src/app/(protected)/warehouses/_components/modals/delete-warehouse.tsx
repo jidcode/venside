@@ -15,6 +15,7 @@ import { useWarehouseService } from "@/core/services/warehouses";
 import { AppError } from "@/core/lib/errors";
 import { RiLoader2Fill } from "react-icons/ri";
 import { WarehouseParamProps } from "./edit-warehouse";
+import { errorToast } from "@/core/lib/utils";
 
 export default function DeleteWarehouseDialog({
   warehouse,
@@ -35,11 +36,11 @@ export default function DeleteWarehouseDialog({
         setOpen(false);
         router.push("/warehouses");
       } else if (response?.error) {
-        alert((response.error as AppError).message || "Request failed!");
+        errorToast((response.error as AppError).message || "Request failed!");
       }
     } catch (error) {
       console.error("Failed to delete warehouse:", error);
-      alert("Failed to delete warehouse. Please try again.");
+      errorToast("Failed to delete warehouse. Please try again.");
     } finally {
       setIsDeleting(false);
     }

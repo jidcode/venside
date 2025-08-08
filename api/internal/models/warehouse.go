@@ -13,8 +13,10 @@ type Warehouse struct {
 	Location    string      `db:"location" json:"location"`
 	Capacity    int         `db:"capacity" json:"capacity"`
 	StorageType string      `db:"storage_type" json:"storageType"`
+	IsMain      bool        `db:"is_main" json:"isMain"`
 	Manager     string      `db:"manager" json:"manager"`
-	Contact     string      `db:"contact" json:"contact"`
+	Phone       string      `db:"phone" json:"phone"`
+	Email       string      `db:"email" json:"email"`
 	InventoryID uuid.UUID   `db:"inventory_id" json:"inventoryId"`
 	CreatedAt   time.Time   `db:"created_at" json:"createdAt"`
 	UpdatedAt   time.Time   `db:"updated_at" json:"updatedAt"`
@@ -22,12 +24,14 @@ type Warehouse struct {
 }
 
 type WarehouseRequest struct {
-	Name        string `json:"name" validate:"required,max=255"`
-	Location    string `json:"location" validate:"max=255"`
+	Name        string `json:"name" validate:"required,max=100"`
+	Location    string `json:"location" validate:"max=200"`
 	Capacity    int    `json:"capacity" validate:"gte=0"`
 	StorageType string `json:"storageType" validate:"required,max=100"`
-	Manager     string `json:"manager" validate:"max=255"`
-	Contact     string `json:"contact" validate:"max=100"`
+	IsMain      bool   `json:"isMain"`
+	Manager     string `json:"manager" validate:"max=100"`
+	Phone       string `json:"phone"`
+	Email       string `json:"email" validate:"omitempty,email"`
 }
 
 type WarehouseResponse struct {
@@ -36,40 +40,47 @@ type WarehouseResponse struct {
 	Location    string              `json:"location"`
 	Capacity    int                 `json:"capacity"`
 	StorageType string              `json:"storageType"`
+	IsMain      bool                `json:"isMain"`
 	Manager     string              `json:"manager"`
-	Contact     string              `json:"contact"`
+	Phone       string              `json:"phone"`
+	Email       string              `json:"email"`
 	CreatedAt   time.Time           `json:"createdAt"`
 	UpdatedAt   time.Time           `json:"updatedAt"`
 	StockItems  []StockItemResponse `json:"stockItems"`
 }
 
 type WarehouseWithStock struct {
-	ID            uuid.UUID `db:"id"`
-	Name          string    `db:"name"`
-	Location      string    `db:"location"`
-	Capacity      int       `db:"capacity"`
-	StorageType   string    `db:"storage_type"`
-	Manager       string    `db:"manager"`
-	Contact       string    `db:"contact"`
-	CreatedAt     time.Time `db:"created_at"`
-	UpdatedAt     time.Time `db:"updated_at"`
-	StockQuantity int       `db:"stock_quantity"`
+	ID              uuid.UUID `db:"id"`
+	Name            string    `db:"name"`
+	Location        string    `db:"location"`
+	Capacity        int       `db:"capacity"`
+	StorageType     string    `db:"storage_type"`
+	IsMain          bool      `db:"is_main"`
+	Manager         string    `db:"manager"`
+	Phone           string    `db:"phone"`
+	Email           string    `db:"email"`
+	CreatedAt       time.Time `db:"created_at"`
+	UpdatedAt       time.Time `db:"updated_at"`
+	QuantityInStock int       `db:"quantity_in_stock"`
 }
 
 // Warehouse stock item models
 type StockItem struct {
-	ProductID     uuid.UUID `db:"product_id" json:"productId"`
-	WarehouseID   uuid.UUID `db:"warehouse_id" json:"warehouseId"`
-	StockQuantity int       `db:"stock_quantity" json:"stockQuantity"`
-	Product       Product   `json:"product"`
+	Product         Product `json:"product"`
+	QuantityInStock int     `json:"quantityInStock"`
 }
 
 type StockItemRequest struct {
-	ProductID     uuid.UUID `db:"product_id" json:"productId"`
-	StockQuantity int       `db:"stock_quantity" json:"stockQuantity"`
+	ProductID       uuid.UUID `db:"product_id" json:"productId"`
+	QuantityInStock int       `db:"quantity_in_stock" json:"quantityInStock"`
 }
 
 type StockItemResponse struct {
-	Product       ProductResponse `json:"product"`
-	StockQuantity int             `json:"stockQuantity"`
+	Product         ProductResponse `json:"product"`
+	QuantityInStock int             `json:"quantityInStock"`
+}
+
+type TransferItemRequest struct {
+	ProductID        uuid.UUID `json:"productId" validate:"required"`
+	TransferQuantity int       `json:"transferQuantity" validate:"required,min=1"`
 }

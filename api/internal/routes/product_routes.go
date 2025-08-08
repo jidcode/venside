@@ -13,15 +13,15 @@ func ProductRoutes(e *echo.Echo, controller products.ProductController, service 
 	api.Use(auth.AuthMiddleware(service))
 	readOnly := api.Group("")
 	readOnly.GET("/products", controller.ListProducts)
-	readOnly.GET("/products/:id", controller.GetProduct)
+	readOnly.GET("/products/:productId", controller.GetProduct)
 	readOnly.GET("/categories", controller.ListProductCategories)
 
 	// Auth & CSRF protected routes (write operations)
 	prdGroup := api.Group("/products")
 	prdGroup.Use(auth.CSRFMiddleware(service))
 	prdGroup.POST("", controller.CreateProduct)
-	prdGroup.PUT("/:id", controller.UpdateProduct)
-	prdGroup.DELETE("/:id", controller.DeleteProduct)
+	prdGroup.PUT("/:productId", controller.UpdateProduct)
+	prdGroup.DELETE("/:productId", controller.DeleteProduct)
 	prdGroup.DELETE("", controller.DeleteMultipleProducts)
 
 	imgGroup := api.Group("/images")

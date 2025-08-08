@@ -134,19 +134,37 @@ export default function WarehouseFormFields({ form }: ParamProps) {
       </div>
 
       <div className="mt-6 space-y-2">
-        <Label htmlFor="contact">Phone Contact</Label>
+        <Label htmlFor="phone">Phone</Label>
         <Input
-          id="contact"
+          id="phone"
           type="tel"
-          {...register("contact")}
-          className={errors.contact ? "border-red-500" : ""}
+          {...register("phone")}
+          className={errors.phone ? "border-red-500" : ""}
           disabled={isSubmitting}
           placeholder="e.g., +1 (555) 123-4567"
         />
-        {errors.contact && (
+        {errors.phone && (
           <p className="text-sm text-red-500 flex items-center gap-1">
             <AlertCircle className="h-4 w-4" />
-            {errors.contact.message}
+            {errors.phone.message}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-6 space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          {...register("email")}
+          className={errors.email ? "border-red-500" : ""}
+          disabled={isSubmitting}
+          placeholder="e.g., info@example.com"
+        />
+        {errors.email && (
+          <p className="text-sm text-red-500 flex items-center gap-1">
+            <AlertCircle className="h-4 w-4" />
+            {errors.email.message}
           </p>
         )}
       </div>

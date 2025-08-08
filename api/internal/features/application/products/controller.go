@@ -41,6 +41,7 @@ func (c *Controller) ListProducts(ctx echo.Context) error {
 	if err != nil {
 		return logger.Error(ctx, "Failed to fetch products", err, logrus.Fields{
 			"inventory_id": inventoryID,
+			"details":      err.Error(),
 		})
 	}
 
@@ -50,6 +51,7 @@ func (c *Controller) ListProducts(ctx echo.Context) error {
 		if err != nil {
 			return logger.Error(ctx, "Failed to fetch product details", err, logrus.Fields{
 				"product_id": product.ID,
+				"details":    err.Error(),
 			})
 		}
 		response[i] = *mapper.ToProductResponse(&detailedProduct)
@@ -59,7 +61,7 @@ func (c *Controller) ListProducts(ctx echo.Context) error {
 }
 
 func (c *Controller) GetProduct(ctx echo.Context) error {
-	productID, err := uuid.Parse(ctx.Param("id"))
+	productID, err := uuid.Parse(ctx.Param("productId"))
 	if err != nil {
 		return errors.ValidationError("Invalid product ID")
 	}
@@ -68,6 +70,7 @@ func (c *Controller) GetProduct(ctx echo.Context) error {
 	if err != nil {
 		return logger.Error(ctx, "Failed to retrieve product", err, logrus.Fields{
 			"product_id": productID,
+			"details":    err.Error(),
 		})
 	}
 
@@ -98,10 +101,10 @@ func (c *Controller) CreateProduct(ctx echo.Context) error {
 	if err := c.repo.CreateProduct(newProduct, req.Categories); err != nil {
 		return logger.Error(ctx, "Failed to create product", err, logrus.Fields{
 			"product_name": newProduct.Name,
+			"details":      err.Error(),
 		})
 	}
 
-	// Upload and save product images
 	if err := c.uploadProductImages(ctx, newProduct.ID, req.NewImages); err != nil {
 		return err
 	}
@@ -111,7 +114,7 @@ func (c *Controller) CreateProduct(ctx echo.Context) error {
 }
 
 func (c *Controller) UpdateProduct(ctx echo.Context) error {
-	productID, err := uuid.Parse(ctx.Param("id"))
+	productID, err := uuid.Parse(ctx.Param("productId"))
 	if err != nil {
 		return errors.ValidationError("Invalid product ID")
 	}
@@ -120,6 +123,7 @@ func (c *Controller) UpdateProduct(ctx echo.Context) error {
 	if err != nil {
 		return logger.Error(ctx, "Product not found", err, logrus.Fields{
 			"product_id": productID,
+			"details":    err.Error(),
 		})
 	}
 
@@ -137,22 +141,22 @@ func (c *Controller) UpdateProduct(ctx echo.Context) error {
 		return err
 	}
 
-	// Update product with categories
 	if err := c.repo.UpdateProduct(updatedProduct, req.Categories); err != nil {
 		return logger.Error(ctx, "Failed to update product", err, logrus.Fields{
 			"product_id": productID,
+			"details":    err.Error(),
 		})
 	}
-	// Update product images
+
 	if err := c.updateProductImages(ctx, productID, req.NewImages, req.ExistingImages); err != nil {
 		return err
 	}
 
-	// Get updated product response
 	finalProduct, err := c.repo.GetProductWithDetails(productID)
 	if err != nil {
 		return logger.Error(ctx, "Failed to retrieve updated product", err, logrus.Fields{
 			"product_id": productID,
+			"details":    err.Error(),
 		})
 	}
 
@@ -161,26 +165,26 @@ func (c *Controller) UpdateProduct(ctx echo.Context) error {
 }
 
 func (c *Controller) DeleteProduct(ctx echo.Context) error {
-	productID, err := uuid.Parse(ctx.Param("id"))
+	productID, err := uuid.Parse(ctx.Param("productId"))
 	if err != nil {
 		return errors.ValidationError("Invalid product ID")
 	}
 
-	// Get product images before deletion to clean up R2 storage
 	images, err := c.repo.GetProductImages(productID)
 	if err != nil {
 		return logger.Error(ctx, "Failed to get product images for cleanup", err, logrus.Fields{
 			"product_id": productID,
+			"details":    err.Error(),
 		})
 	}
 
 	if err := c.repo.DeleteProduct(productID); err != nil {
 		return logger.Error(ctx, "Failed to delete product", err, logrus.Fields{
 			"product_id": productID,
+			"details":    err.Error(),
 		})
 	}
 
-	// Clean up R2 storage
 	if len(images) > 0 {
 		fileKeys := make([]string, len(images))
 		for i, img := range images {
@@ -191,6 +195,7 @@ func (c *Controller) DeleteProduct(ctx echo.Context) error {
 			logger.Error(ctx, "Failed to delete product images from R2", err, logrus.Fields{
 				"product_id": productID,
 				"file_keys":  fileKeys,
+				"details":    err.Error(),
 			})
 		}
 	}
@@ -204,11 +209,11 @@ func (c *Controller) DeleteMultipleProducts(ctx echo.Context) error {
 		return errors.ValidationError("Invalid inventory ID")
 	}
 
-	type DeleteMultipleProductsRequest struct {
+	type DeleteProductsRequest struct {
 		ProductIDs []string `json:"productIds" validate:"required,min=1,dive"`
 	}
 
-	var req DeleteMultipleProductsRequest
+	var req DeleteProductsRequest
 
 	if err := ctx.Bind(&req); err != nil {
 		return errors.ValidationError("Invalid request body")
@@ -218,33 +223,30 @@ func (c *Controller) DeleteMultipleProducts(ctx echo.Context) error {
 		return errors.ValidationError(err.Error())
 	}
 
-	// Convert string UUIDs to uuid.UUID
 	productIDs := make([]uuid.UUID, len(req.ProductIDs))
 	for i, id := range req.ProductIDs {
 		pid, err := uuid.Parse(id)
 		if err != nil {
-			return errors.ValidationError("Invalid product ID format")
+			return errors.ValidationError("Invalid product ID")
 		}
 		productIDs[i] = pid
 	}
 
-	// Get all images for all products before deletion
 	images, err := c.repo.GetImagesOfMultipleProducts(productIDs)
 	if err != nil {
 		return logger.Error(ctx, "Failed to get product images for cleanup", err, logrus.Fields{
-			"details":     err.Error(),
 			"product_ids": productIDs,
+			"details":     err.Error(),
 		})
 	}
 
 	if err := c.repo.DeleteMultipleProducts(productIDs, inventoryID); err != nil {
 		return logger.Error(ctx, "Failed to delete products", err, logrus.Fields{
-			"details":     err.Error(),
 			"product_ids": productIDs,
+			"details":     err.Error(),
 		})
 	}
 
-	// Clean up R2 storage
 	if len(images) > 0 {
 		fileKeys := make([]string, len(images))
 		for i, img := range images {
@@ -255,6 +257,7 @@ func (c *Controller) DeleteMultipleProducts(ctx echo.Context) error {
 			logger.Error(ctx, "Failed to delete product images from R2", err, logrus.Fields{
 				"product_ids": productIDs,
 				"file_keys":   fileKeys,
+				"details":     err.Error(),
 			})
 		}
 	}
@@ -272,6 +275,7 @@ func (c *Controller) ListProductCategories(ctx echo.Context) error {
 	if err != nil {
 		return logger.Error(ctx, "Failed to fetch categories", err, logrus.Fields{
 			"inventory_id": inventoryID,
+			"details":      err.Error(),
 		})
 	}
 
@@ -297,6 +301,7 @@ func (c *Controller) SetPrimaryImage(ctx echo.Context) error {
 	if err := c.repo.SetPrimaryImage(imageID, inventoryID); err != nil {
 		return logger.Error(ctx, "Failed to set primary image", err, logrus.Fields{
 			"image_id": imageID,
+			"details":  err.Error(),
 		})
 	}
 

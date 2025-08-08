@@ -12,12 +12,12 @@ type WarehouseRepository interface {
 	GetWarehouseWithStock(warehouseID uuid.UUID) (models.Warehouse, error)
 	CreateWarehouse(warehouse *models.Warehouse) error
 	UpdateWarehouse(warehouse *models.Warehouse) error
-	DeleteWarehouse(warehouseID uuid.UUID) error
+	DeleteWarehouse(warehouseID, inventoryID uuid.UUID) error
 
 	AddProductsToWarehouse(warehouseID, inventoryID uuid.UUID, items []models.StockItemRequest) error
-	RemoveProductsFromWarehouse(warehouseID uuid.UUID, productIDs []uuid.UUID) error
-	UpdateStockQuantity(warehouseID, productID uuid.UUID, quantity int) error
-	TransferProducts(fromWarehouseID, toWarehouseID uuid.UUID, transferItems []models.StockItemRequest) error
+	RemoveProductFromWarehouse(inventoryID, warehouseID, productID uuid.UUID) error
+	TransferWarehouseStock(inventoryID uuid.UUID, fromWarehouseID, toWarehouseID uuid.UUID, items []models.TransferItemRequest) error
+	UpdateStockQuantity(inventoryID, warehouseID, productID uuid.UUID, newQuantity int) error
 }
 
 type WarehouseController interface {
@@ -28,7 +28,7 @@ type WarehouseController interface {
 	DeleteWarehouse(ctx echo.Context) error
 
 	AddProductsToWarehouse(ctx echo.Context) error
-	RemoveProductsFromWarehouse(ctx echo.Context) error
+	RemoveProductFromWarehouse(ctx echo.Context) error
+	TransferWarehouseStock(ctx echo.Context) error
 	UpdateStockQuantity(ctx echo.Context) error
-	TransferProducts(ctx echo.Context) error
 }

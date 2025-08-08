@@ -17,6 +17,7 @@ func ToCreateProduct(req *models.ProductRequest, inventoryID uuid.UUID) *models.
 		Model:         trim(req.Model),
 		Description:   trim(req.Description),
 		TotalQuantity: req.TotalQuantity,
+		TotalStock:    req.TotalStock,
 		RestockLevel:  req.RestockLevel,
 		OptimalLevel:  req.OptimalLevel,
 		CostPrice:     req.CostPrice,
@@ -60,6 +61,7 @@ func ToProductResponse(product *models.Product) *models.ProductResponse {
 		Model:         product.Model,
 		Description:   product.Description,
 		TotalQuantity: product.TotalQuantity,
+		TotalStock:    product.TotalStock,
 		RestockLevel:  product.RestockLevel,
 		OptimalLevel:  product.OptimalLevel,
 		CostPrice:     product.CostPrice,
@@ -68,45 +70,61 @@ func ToProductResponse(product *models.Product) *models.ProductResponse {
 		UpdatedAt:     product.UpdatedAt,
 	}
 
+	// Calculate total stock from warehouse quantities if available
+	if len(product.Storages) > 0 {
+		response.TotalStock = 0
+		for _, storage := range product.Storages {
+			response.TotalStock += storage.QuantityInStock
+		}
+	}
+
 	// Map images
-	for _, img := range product.Images {
-		response.Images = append(response.Images, models.ProductImageResponse{
-			ID:        img.ID,
-			URL:       img.URL,
-			Name:      img.Name,
-			FileKey:   img.FileKey,
-			IsPrimary: img.IsPrimary,
-			CreatedAt: img.CreatedAt,
-			UpdatedAt: img.UpdatedAt,
-		})
+	if product.Images != nil {
+		for _, img := range product.Images {
+			response.Images = append(response.Images, models.ProductImageResponse{
+				ID:        img.ID,
+				URL:       img.URL,
+				Name:      img.Name,
+				FileKey:   img.FileKey,
+				IsPrimary: img.IsPrimary,
+				CreatedAt: img.CreatedAt,
+				UpdatedAt: img.UpdatedAt,
+			})
+		}
 	}
 
 	// Map categories
-	for _, ctg := range product.Categories {
-		response.Categories = append(response.Categories, models.ProductCategoryResponse{
-			ID:        ctg.ID,
-			Name:      ctg.Name,
-			CreatedAt: ctg.CreatedAt,
-			UpdatedAt: ctg.UpdatedAt,
-		})
+	if product.Categories != nil {
+		for _, ctg := range product.Categories {
+			response.Categories = append(response.Categories, models.ProductCategoryResponse{
+				ID:        ctg.ID,
+				Name:      ctg.Name,
+				CreatedAt: ctg.CreatedAt,
+				UpdatedAt: ctg.UpdatedAt,
+			})
+		}
 	}
 
 	// Map storages
-	for _, storage := range product.Storages {
-		response.Storages = append(response.Storages, models.StorageResponse{
-			Warehouse: models.WarehouseResponse{
-				ID:          storage.Warehouse.ID,
-				Name:        storage.Warehouse.Name,
-				Location:    storage.Warehouse.Location,
-				Capacity:    storage.Warehouse.Capacity,
-				StorageType: storage.Warehouse.StorageType,
-				Manager:     storage.Warehouse.Manager,
-				Contact:     storage.Warehouse.Contact,
-				CreatedAt:   storage.Warehouse.CreatedAt,
-				UpdatedAt:   storage.Warehouse.UpdatedAt,
-			},
-			StockQuantity: storage.StockQuantity,
-		})
+	if product.Storages != nil {
+		for _, storage := range product.Storages {
+			response.Storages = append(response.Storages, models.StorageResponse{
+				Warehouse: models.WarehouseResponse{
+					ID:          storage.Warehouse.ID,
+					Name:        storage.Warehouse.Name,
+					Location:    storage.Warehouse.Location,
+					Capacity:    storage.Warehouse.Capacity,
+					StorageType: storage.Warehouse.StorageType,
+					IsMain:      storage.Warehouse.IsMain,
+					Manager:     storage.Warehouse.Manager,
+					Phone:       storage.Warehouse.Phone,
+					Email:       storage.Warehouse.Email,
+					CreatedAt:   storage.Warehouse.CreatedAt,
+					UpdatedAt:   storage.Warehouse.UpdatedAt,
+				},
+				QuantityInStock: storage.QuantityInStock,
+			})
+		}
 	}
 
 	return response
@@ -119,4 +137,32 @@ func ToProductCategoryResponse(category *models.ProductCategory) *models.Product
 		CreatedAt: category.CreatedAt,
 		UpdatedAt: category.UpdatedAt,
 	}
+}
+
+func ToProductStock(productsWithStock []models.ProductWithStock) []models.StockItem {
+	var stockItems []models.StockItem
+	for _, pws := range productsWithStock {
+		stockItems = append(stockItems, models.StockItem{
+			Product: models.Product{
+				ID:            pws.ID,
+				Name:          pws.Name,
+				Code:          pws.Code,
+				SKU:           pws.SKU,
+				Brand:         pws.Brand,
+				Model:         pws.Model,
+				Description:   pws.Description,
+				TotalQuantity: pws.TotalQuantity,
+				TotalStock:    pws.TotalStock,
+				RestockLevel:  pws.RestockLevel,
+				OptimalLevel:  pws.OptimalLevel,
+				CostPrice:     pws.CostPrice,
+				SellingPrice:  pws.SellingPrice,
+				InventoryID:   pws.InventoryID,
+				CreatedAt:     pws.CreatedAt,
+				UpdatedAt:     pws.UpdatedAt,
+			},
+			QuantityInStock: pws.QuantityInStock,
+		})
+	}
+	return stockItems
 }

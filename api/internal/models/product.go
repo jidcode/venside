@@ -17,6 +17,7 @@ type Product struct {
 	Model         string            `db:"model" json:"model"`
 	Description   string            `db:"description" json:"description"`
 	TotalQuantity int               `db:"total_quantity" json:"totalQuantity"`
+	TotalStock    int               `db:"total_stock" json:"totalStock"`
 	RestockLevel  int               `db:"restock_level" json:"restockLevel"`
 	OptimalLevel  int               `db:"optimal_level" json:"optimalLevel"`
 	CostPrice     int               `db:"cost_price" json:"costPrice"`
@@ -24,24 +25,25 @@ type Product struct {
 	InventoryID   uuid.UUID         `db:"inventory_id" json:"inventoryId"`
 	CreatedAt     time.Time         `db:"created_at" json:"createdAt"`
 	UpdatedAt     time.Time         `db:"updated_at" json:"updatedAt"`
+	Images        []ProductImage    `json:"images"`
 	Categories    []ProductCategory `json:"categories"`
 	Storages      []Storage         `json:"storages"`
-	Images        []ProductImage    `json:"images"`
 }
 
 type ProductRequest struct {
-	Name           string                  `json:"name" validate:"required,max=100"`
-	Code           string                  `json:"code" validate:"max=20"`
-	SKU            string                  `json:"sku" validate:"max=20"`
-	Brand          string                  `json:"brand" validate:"max=50"`
-	Model          string                  `json:"model" validate:"max=50"`
-	Description    string                  `json:"description" validate:"max=200"`
+	Name           string                  `json:"name" validate:"required,max=255"`
+	Code           string                  `json:"code" validate:"max=100"`
+	SKU            string                  `json:"sku" validate:"max=100"`
+	Brand          string                  `json:"brand" validate:"max=255"`
+	Model          string                  `json:"model" validate:"max=255"`
+	Description    string                  `json:"description"`
 	TotalQuantity  int                     `json:"totalQuantity" validate:"gte=0"`
+	TotalStock     int                     `json:"totalStock" validate:"gte=0"`
 	RestockLevel   int                     `json:"restockLevel" validate:"gte=0"`
 	OptimalLevel   int                     `json:"optimalLevel" validate:"gte=0"`
 	CostPrice      int                     `json:"costPrice" validate:"gte=0"`
 	SellingPrice   int                     `json:"sellingPrice" validate:"gte=0"`
-	Categories     []string                `json:"categories" validate:"dive,min=1,max=50"`
+	Categories     []string                `json:"categories" validate:"dive,min=1,max=100"`
 	NewImages      []*multipart.FileHeader `json:"newImages"`
 	ExistingImages []ProductImageRequest   `json:"existingImages"`
 }
@@ -55,34 +57,36 @@ type ProductResponse struct {
 	Model         string                    `json:"model"`
 	Description   string                    `json:"description"`
 	TotalQuantity int                       `json:"totalQuantity"`
+	TotalStock    int                       `json:"totalStock"`
 	RestockLevel  int                       `json:"restockLevel"`
 	OptimalLevel  int                       `json:"optimalLevel"`
 	CostPrice     int                       `json:"costPrice"`
 	SellingPrice  int                       `json:"sellingPrice"`
 	CreatedAt     time.Time                 `json:"createdAt"`
 	UpdatedAt     time.Time                 `json:"updatedAt"`
+	Images        []ProductImageResponse    `json:"images"`
 	Categories    []ProductCategoryResponse `json:"categories"`
 	Storages      []StorageResponse         `json:"storages"`
-	Images        []ProductImageResponse    `json:"images"`
 }
 
 type ProductWithStock struct {
-	ID            uuid.UUID `db:"id"`
-	Name          string    `db:"name"`
-	Code          string    `db:"code"`
-	SKU           string    `db:"sku"`
-	Brand         string    `db:"brand"`
-	Model         string    `db:"model"`
-	Description   string    `db:"description"`
-	TotalQuantity int       `db:"total_quantity"`
-	RestockLevel  int       `db:"restock_level"`
-	OptimalLevel  int       `db:"optimal_level"`
-	CostPrice     int       `db:"cost_price"`
-	SellingPrice  int       `db:"selling_price"`
-	InventoryID   uuid.UUID `db:"inventory_id"`
-	CreatedAt     time.Time `db:"created_at"`
-	UpdatedAt     time.Time `db:"updated_at"`
-	StockQuantity int       `db:"stock_quantity"`
+	ID              uuid.UUID `db:"id"`
+	Name            string    `db:"name"`
+	Code            string    `db:"code"`
+	SKU             string    `db:"sku"`
+	Brand           string    `db:"brand"`
+	Model           string    `db:"model"`
+	Description     string    `db:"description"`
+	TotalQuantity   int       `db:"total_quantity"`
+	TotalStock      int       `db:"total_stock"`
+	RestockLevel    int       `db:"restock_level"`
+	OptimalLevel    int       `db:"optimal_level"`
+	CostPrice       int       `db:"cost_price"`
+	SellingPrice    int       `db:"selling_price"`
+	InventoryID     uuid.UUID `db:"inventory_id"`
+	CreatedAt       time.Time `db:"created_at"`
+	UpdatedAt       time.Time `db:"updated_at"`
+	QuantityInStock int       `db:"quantity_in_stock"`
 }
 
 // Image models
@@ -134,20 +138,18 @@ type ProductCategoryLink struct {
 	CategoryID uuid.UUID `db:"category_id" json:"categoryId"`
 }
 
-// Product storage models
+// Storage models
 type Storage struct {
-	ProductID     uuid.UUID `db:"product_id" json:"productId"`
-	WarehouseID   uuid.UUID `db:"warehouse_id" json:"warehouseId"`
-	StockQuantity int       `db:"stock_quantity" json:"stockQuantity"`
-	Warehouse     Warehouse `json:"warehouse"`
+	Warehouse       Warehouse `json:"warehouse"`
+	QuantityInStock int       `json:"quantityInStock"`
 }
 
 type StorageRequest struct {
-	WarehouseID   uuid.UUID `db:"warehouse_id" json:"warehouseId"`
-	StockQuantity int       `db:"stock_quantity" json:"stockQuantity"`
+	WarehouseID     uuid.UUID `db:"warehouse_id" json:"warehouseId"`
+	QuantityInStock int       `db:"quantity_in_stock" json:"quantityInStock"`
 }
 
 type StorageResponse struct {
-	Warehouse     WarehouseResponse `json:"warehouse"`
-	StockQuantity int               `json:"stockQuantity"`
+	Warehouse       WarehouseResponse `json:"warehouse"`
+	QuantityInStock int               `json:"quantityInStock"`
 }

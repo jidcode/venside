@@ -17,6 +17,7 @@ export default function NewProductPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       totalQuantity: 0,
+      totalStock: 0,
       restockLevel: 0,
       optimalLevel: 0,
       costPrice: 0.0,

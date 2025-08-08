@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/core/components/ui/dialog";
+import { errorToast, successToast } from "@/core/lib/utils";
 import { useProductService } from "@/core/services/products";
 import { useState } from "react";
 import { TbTrashX } from "react-icons/tb";
@@ -41,14 +42,14 @@ export default function DeleteMultipleProductsDialog({
       if (response?.success) {
         setOpen(false);
         onSuccess?.();
-        toast("Products successfully deleted.");
+        successToast("Products successfully deleted.");
       } else if (response?.error) {
         setOpen(false);
-        toast(response?.error.message || "Failed to delete products");
+        errorToast(response?.error.message || "Failed to delete products");
       }
     } catch (error) {
       console.error("Failed to delete products:", error);
-      toast("Failed to delete products. Please try again.");
+      errorToast("Failed to delete products. Please try again.");
     } finally {
       setIsDeleting(false);
     }

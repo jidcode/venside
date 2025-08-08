@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"time"
 
+	"github.com/app/venside/internal/mapper"
 	"github.com/app/venside/internal/models"
 	"github.com/app/venside/pkg/errors"
 	"github.com/app/venside/pkg/logger"
@@ -22,11 +23,7 @@ func (r *Repository) invalidateProductCaches(productID, inventoryID uuid.UUID) {
 	r.cache.Delete(categoryListCacheKey(inventoryID))
 }
 
-func (r *Repository) handleProductCategories(
-	tx *sqlx.Tx,
-	productID, inventoryID uuid.UUID,
-	categories []string,
-) error {
+func (r *Repository) handleProductCategories(tx *sqlx.Tx, productID, inventoryID uuid.UUID, categories []string) error {
 	if len(categories) == 0 {
 		return nil
 	}
@@ -77,35 +74,67 @@ func (r *Repository) handleProductCategories(
 	return nil
 }
 
-// func (r *Repository) handleProductStorages(
-// 	tx *sqlx.Tx,
-// 	productID uuid.UUID,
-// 	storages []models.StorageRequest,
-// ) error {
-// 	if len(storages) == 0 {
-// 		return nil
-// 	}
+func (r *Repository) updateProductCategories(tx *sqlx.Tx, productID, inventoryID uuid.UUID, categories []string) error {
+	// Remove existing category links
+	if _, err := tx.Exec(`DELETE FROM product_category_link WHERE product_id = $1`, productID); err != nil {
+		return errors.DatabaseError(err, "Error removing existing category links")
+	}
 
-// 	query := `INSERT INTO warehouse_product_link (
-// 		product_id, warehouse_id, stock_quantity
-// 	) VALUES (
-// 		:product_id, :warehouse_id, :stock_quantity)`
+	// Add new links if categories are provided
+	if len(categories) > 0 {
+		return r.handleProductCategories(tx, productID, inventoryID, categories)
+	}
+	return nil
+}
 
-// 	for _, storage := range storages {
-// 		warehouse := &models.Storage{
-// 			ProductID:     productID,
-// 			WarehouseID:   storage.WarehouseID,
-// 			StockQuantity: storage.StockQuantity,
-// 		}
+func (r *Repository) loadProductImages(product *models.Product) error {
+	var images []models.ProductImage
+	err := r.db.Select(&images, `
+		SELECT * FROM product_images 
+		WHERE product_id = $1 
+		ORDER BY is_primary DESC, created_at ASC
+	`, product.ID)
+	if err != nil {
+		return errors.DatabaseError(err, "Error fetching product images")
+	}
+	product.Images = images
+	return nil
+}
 
-// 		_, err := tx.NamedExec(query, warehouse)
-// 		if err != nil {
-// 			return errors.DatabaseError(err, "Create Product Warehouse")
-// 		}
-// 	}
+func (r *Repository) loadProductCategories(product *models.Product) error {
+	var categories []models.ProductCategory
+	err := r.db.Select(&categories, `
+		SELECT pc.* FROM product_categories pc
+		JOIN product_category_link pcm ON pc.id = pcm.category_id
+		WHERE pcm.product_id = $1
+	`, product.ID)
+	if err != nil {
+		return errors.DatabaseError(err, "Error fetching product categories")
+	}
+	product.Categories = categories
+	return nil
+}
 
-// 	return nil
-// }
+func (r *Repository) loadWarehouseStock(product *models.Product) error {
+	var warehouses []models.WarehouseWithStock
+	query := `
+        SELECT 
+            w.id, w.name, w.location, w.capacity, w.storage_type,
+            w.is_main, w.manager, w.phone, w.email,
+            w.created_at, w.updated_at, 
+            wpl.quantity_in_stock
+        FROM warehouse_product_link wpl
+        JOIN warehouses w ON wpl.warehouse_id = w.id
+        WHERE wpl.product_id = $1
+    `
+	err := r.db.Select(&warehouses, query, product.ID)
+	if err != nil {
+		return errors.DatabaseError(err, "Error fetching warehouse stock")
+	}
+
+	product.Storages = mapper.ToWarehouseStock(warehouses)
+	return nil
+}
 
 // CONTROLLER HELPERS
 func (c *Controller) parseProductRequest(ctx echo.Context) (models.ProductRequest, error) {

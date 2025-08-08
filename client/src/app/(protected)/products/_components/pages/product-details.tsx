@@ -272,7 +272,7 @@ function DetailsCard({ product }: { product: ProductState }) {
       </CardHeader>
 
       <CardContent>
-        <div className="p-4 rounded-lg bg-primary border border-neutral/20 space-y-6">
+        <div className="p-4 rounded-lg bg-primary border border-neutral/20 space-y-4">
           <div className="border-b border-neutral/20 pb-4">
             <Label className="text-neutral font-semibold">Description</Label>
             <p className="mt-2 leading-relaxed">
@@ -280,20 +280,20 @@ function DetailsCard({ product }: { product: ProductState }) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-0.5">
               <Label className="text-neutral font-semibold">Brand</Label>
               <p className="font-medium">{product.brand || "N/A"}</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <Label className="text-neutral font-semibold">Model</Label>
               <p className="font-medium">{product.model || "N/A"}</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <Label className="text-neutral font-semibold">Code</Label>
               <p className="font-medium">{product.code || "N/A"}</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <Label className="text-neutral font-semibold">SKU</Label>
               <p className="font-medium">{product.sku || "N/A"}</p>
             </div>
@@ -332,7 +332,7 @@ function PricingCard({ product }: { product: ProductState }) {
 
       <CardContent>
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-100">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-200">
             <div className="flex items-center gap-2">
               <div className="size-2 rounded-full bg-red-600"></div>
               <span className="text-sm font-medium text-red-600">
@@ -344,7 +344,7 @@ function PricingCard({ product }: { product: ProductState }) {
             </span>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-100">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
             <div className="flex items-center gap-2">
               <div className="size-2 rounded-full bg-green-800"></div>
               <span className="text-sm font-medium text-green-800">
@@ -356,7 +356,7 @@ function PricingCard({ product }: { product: ProductState }) {
             </span>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-lg bg-sky-50 border border-sky-100">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-sky-50 border border-sky-200">
             <div className="flex items-center gap-2">
               <div className="size-2 rounded-full bg-sky-800"></div>
               <span className="text-sm font-medium text-sky-800">
@@ -397,13 +397,13 @@ function StockCard({ product }: { product: ProductState }) {
       </CardHeader>
 
       <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-start justify-between mb-4">
             <div>
               <h3 className="font-medium text-neutral">Total Quantity</h3>
               <p className="text-3xl font-bold">{product.totalQuantity}</p>
             </div>
-            <div className="text-right">
+            <div className="text-center">
               <h3 className="font-medium text-neutral">Status</h3>
               <Badge
                 variant="secondary"
@@ -426,7 +426,7 @@ function StockCard({ product }: { product: ProductState }) {
           </div>
 
           {/*  Progress Bar */}
-          <div className="mt-3">
+          <div>
             <div className="w-full bg-neutral/20 h-2 rounded-full overflow-hidden">
               <div
                 className={cn(
@@ -442,19 +442,32 @@ function StockCard({ product }: { product: ProductState }) {
             </div>
           </div>
 
-          <div className="flex justify-between text-sm text-neutral">
+          <div className="flex justify-between text-sm text-neutral mt-1">
             <p>
               Restock:
-              <span className="font-semibold ml-1 text-secondary">
+              <span className="font-semibold ml-1 text-red-500">
                 {product.restockLevel}
               </span>
             </p>
             <p>
               Optimal:
-              <span className="font-semibold ml-1 text-secondary">
+              <span className="font-semibold ml-1 text-green-600">
                 {product.optimalLevel}
               </span>
             </p>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 mt-5">
+            <div className="space-y-0.5">
+              <Label className="text-neutral font-semibold">In Stock</Label>
+              <p className="font-medium text-xl">{product.totalStock}</p>
+            </div>
+            <div className="space-y-0.5">
+              <Label className="text-neutral font-semibold">Unstocked</Label>
+              <p className="font-medium text-xl">
+                {product.totalQuantity - product.totalStock}
+              </p>
+            </div>
           </div>
         </div>
       </CardContent>
@@ -463,7 +476,7 @@ function StockCard({ product }: { product: ProductState }) {
 }
 
 function StoragesCard({ product }: { product: ProductState }) {
-  const storages = product.storages || []; // Fallback to empty array if null/undefined
+  const storages = product.storages || [];
   const totalQuantity = product.totalQuantity;
 
   return (
@@ -492,7 +505,7 @@ function StoragesCard({ product }: { product: ProductState }) {
             {storages.map((storage, index) => {
               const percentage =
                 totalQuantity > 0
-                  ? Math.round((storage.stockQuantity / totalQuantity) * 100)
+                  ? Math.round((storage.quantityInStock / totalQuantity) * 100)
                   : 0;
 
               return (
@@ -525,7 +538,7 @@ function StoragesCard({ product }: { product: ProductState }) {
                         <TrendingUp className="size-3" />
                         <span>
                           {(
-                            (storage.stockQuantity /
+                            (storage.quantityInStock /
                               storage.warehouse.capacity) *
                             100
                           ).toFixed(1)}
@@ -537,10 +550,10 @@ function StoragesCard({ product }: { product: ProductState }) {
 
                   <div className="flex items-center gap-4 mt-2">
                     <p className="text-xs uppercase font-medium tracking-wider">
-                      In Stock:
+                      Qty In Stock:
                     </p>
                     <div className="flex items-baseline gap-1 text-2xl font-semibold text-foreground">
-                      {storage.stockQuantity.toLocaleString()}
+                      {storage.quantityInStock.toLocaleString()}
                       <span className="text-sm text-neutral/90 font-medium">
                         / {totalQuantity}
                       </span>

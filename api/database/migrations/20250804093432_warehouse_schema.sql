@@ -6,8 +6,10 @@ CREATE TABLE IF NOT EXISTS warehouses (
     location VARCHAR(255),
     capacity INTEGER NOT NULL DEFAULT 0,
     storage_type VARCHAR(100) NOT NULL,
+    is_main BOOLEAN DEFAULT false,
     manager VARCHAR(255),
-    contact TEXT,       
+    phone TEXT,       
+    email TEXT,       
     inventory_id UUID NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -18,7 +20,7 @@ CREATE TABLE IF NOT EXISTS warehouses (
 CREATE TABLE IF NOT EXISTS warehouse_product_link (
     product_id UUID NOT NULL,
     warehouse_id UUID NOT NULL,
-    stock_quantity INTEGER NOT NULL DEFAULT 0,
+    quantity_in_stock INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (product_id, warehouse_id),
     CONSTRAINT fk_warehouse_product_link_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
     CONSTRAINT fk_warehouse_product_link_warehouse FOREIGN KEY (warehouse_id) REFERENCES warehouses (id) ON DELETE CASCADE

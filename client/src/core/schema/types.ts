@@ -54,8 +54,10 @@ export interface WarehouseState {
   location: string;
   capacity: number;
   storageType: StorageType;
+  isMain: boolean;
   manager: string;
-  contact: string;
+  phone: string;
+  email: string;
   inventoryId: string;
   stockItems: StockItemState[];
   createdAt?: string;
@@ -64,7 +66,7 @@ export interface WarehouseState {
 
 export interface StockItemState {
   product: ProductState;
-  stockQuantity: number;
+  quantityInStock: number;
 }
 
 export interface ProductState {
@@ -76,6 +78,7 @@ export interface ProductState {
   model: string;
   description: string;
   totalQuantity: number;
+  totalStock: number;
   restockLevel: number;
   optimalLevel: number;
   costPrice: number;
@@ -86,6 +89,11 @@ export interface ProductState {
   images: ProductImageState[];
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface StorageState {
+  warehouse: WarehouseState;
+  quantityInStock: number;
 }
 
 export interface ProductImageState {
@@ -111,9 +119,4 @@ export interface ProductCategoryState {
   inventoryId: string;
   createdAt?: string;
   updatedAt?: string;
-}
-
-export interface StorageState {
-  warehouse: WarehouseState;
-  stockQuantity: number;
 }

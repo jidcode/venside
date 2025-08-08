@@ -21,10 +21,7 @@ import {
   parseServerErrors,
 } from "@/core/components/elements/error-display";
 import { PackagePlus } from "lucide-react";
-import {
-  WarehouseStockRequest,
-  warehouseStockSchema,
-} from "@/core/schema/validator";
+import { AddStockRequest, addStockSchema } from "@/core/schema/validator";
 import { AppError } from "@/core/lib/errors";
 import SelectProducts from "../forms/select-products";
 
@@ -62,14 +59,14 @@ function AddStockItem({ warehouseId, closeSheet }: AddStockItemProps) {
   const [errorResponse, setErrorResponse] = useState<string | null>(null);
   const { addProductsToWarehouse } = useWarehouseService();
 
-  const form = useForm<WarehouseStockRequest>({
-    resolver: zodResolver(warehouseStockSchema),
+  const form = useForm<AddStockRequest>({
+    resolver: zodResolver(addStockSchema),
     defaultValues: {
       stockItems: [],
     },
   });
 
-  const action: SubmitHandler<WarehouseStockRequest> = async (formData) => {
+  const action: SubmitHandler<AddStockRequest> = async (formData) => {
     setErrorResponse(null);
     console.log(formData);
 
@@ -80,6 +77,7 @@ function AddStockItem({ warehouseId, closeSheet }: AddStockItemProps) {
       if (response?.success) {
         form.reset();
         closeSheet();
+        window.location.reload();
       } else if (response?.error) {
         setErrorResponse(
           (response.error as AppError).message || "Failed to add products"
@@ -138,8 +136,7 @@ function AddStockItem({ warehouseId, closeSheet }: AddStockItemProps) {
 
         <CardContent className="overflow-y-auto p-6">
           {errorResponse && <DisplayErrors serverErrors={serverErrors} />}
-
-          <SelectProducts form={form} />
+          <SelectProducts form={form} warehouseId={warehouseId} />
         </CardContent>
       </Card>
     </form>

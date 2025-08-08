@@ -242,7 +242,7 @@ function Body({
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell
-                  className="py-4 border-b border-neutral/20"
+                  className="py-2 border-b border-neutral/20"
                   key={cell.id}
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
