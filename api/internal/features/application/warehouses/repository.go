@@ -353,20 +353,37 @@ func (r *Repository) TransferWarehouseStock(inventoryID uuid.UUID, fromWarehouse
 }
 
 func (r *Repository) UpdateStockQuantity(inventoryID, warehouseID, productID uuid.UUID, newQuantity int) error {
-	// Get current quantity first
-	var currentQuantity int
-	err := r.db.Get(&currentQuantity,
-		`SELECT COALESCE(quantity_in_stock, 0) 
-         FROM warehouse_product_link 
-         WHERE warehouse_id = $1 AND product_id = $2`,
-		warehouseID, productID)
-	if err != nil && err != sql.ErrNoRows {
-		return errors.DatabaseError(err, "Error checking current stock")
+	// Get current product and stock information
+	var current struct {
+		WarehouseStock int       `db:"warehouse_stock"`
+		TotalQuantity  int       `db:"total_quantity"`
+		TotalStock     int       `db:"total_stock"`
+		InventoryID    uuid.UUID `db:"inventory_id"`
 	}
 
-	// If product doesn't exist in warehouse and new quantity is 0, nothing to do
-	if err == sql.ErrNoRows && newQuantity == 0 {
-		return nil
+	err := r.db.Get(&current,
+		`SELECT 
+            COALESCE(wpl.quantity_in_stock, 0) as warehouse_stock,
+            p.total_quantity,
+            p.total_stock,
+            p.inventory_id
+         FROM products p
+         LEFT JOIN warehouse_product_link wpl ON 
+            wpl.product_id = p.id AND 
+            wpl.warehouse_id = $1
+         WHERE p.id = $2`,
+		warehouseID, productID)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.ValidationError("Product not found")
+		}
+		return errors.DatabaseError(err, "Error retrieving product stock data")
+	}
+
+	// Verify product belongs to the correct inventory
+	if current.InventoryID != inventoryID {
+		return errors.ValidationError("Product does not belong to specified inventory")
 	}
 
 	tx, err := r.db.Beginx()
@@ -375,40 +392,46 @@ func (r *Repository) UpdateStockQuantity(inventoryID, warehouseID, productID uui
 	}
 	defer tx.Rollback()
 
-	// Calculate the difference for updating product total_stock
-	stockDifference := newQuantity - currentQuantity
+	// Calculate the global stock difference
+	stockDifference := newQuantity - current.WarehouseStock
 
+	// Update total_quantity if new quantity exceeds it
+	if newQuantity > current.TotalQuantity {
+		_, err = tx.Exec(
+			`UPDATE products 
+             SET total_quantity = $1 
+             WHERE id = $2`,
+			newQuantity, productID)
+		if err != nil {
+			return errors.DatabaseError(err, "Error updating product total quantity")
+		}
+	}
+
+	// Update or delete warehouse stock record
 	if newQuantity == 0 {
-		// Remove the product from warehouse if new quantity is 0
 		_, err = tx.Exec(
 			`DELETE FROM warehouse_product_link 
              WHERE warehouse_id = $1 AND product_id = $2`,
 			warehouseID, productID)
-		if err != nil {
-			return errors.DatabaseError(err, "Error removing product from warehouse")
-		}
-	} else if err == sql.ErrNoRows {
-		// Product doesn't exist in warehouse, insert new record
+	} else if current.WarehouseStock == 0 {
 		_, err = tx.Exec(
-			`INSERT INTO warehouse_product_link (product_id, warehouse_id, quantity_in_stock)
+			`INSERT INTO warehouse_product_link 
+             (product_id, warehouse_id, quantity_in_stock)
              VALUES ($1, $2, $3)`,
 			productID, warehouseID, newQuantity)
-		if err != nil {
-			return errors.DatabaseError(err, "Error adding product to warehouse")
-		}
 	} else {
-		// Update existing record
 		_, err = tx.Exec(
 			`UPDATE warehouse_product_link 
              SET quantity_in_stock = $1 
              WHERE warehouse_id = $2 AND product_id = $3`,
 			newQuantity, warehouseID, productID)
-		if err != nil {
-			return errors.DatabaseError(err, "Error updating product stock")
-		}
 	}
 
-	// Update the product's total_stock
+	if err != nil {
+		return errors.DatabaseError(err, "Error updating warehouse stock")
+	}
+
+	// Update product's total stock if changed
 	if stockDifference != 0 {
 		_, err = tx.Exec(
 			`UPDATE products 

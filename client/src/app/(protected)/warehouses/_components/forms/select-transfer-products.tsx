@@ -204,27 +204,17 @@ function ProductsTransferTable({
   const getQty = (id: string) =>
     selectedItems.find((s) => s.productId === id)?.transferQuantity ?? 1;
 
-  const handleToggle = (id: string, maxQty: number) => {
-    if (maxQty === 0) return;
+  const handleToggle = (id: string) => {
     isSelected(id)
       ? remove(findIndex(id))
       : append({ productId: id, transferQuantity: 1 });
   };
 
-  const handleQtyChange = (
-    id: string,
-    value: string,
-    maxQty: number,
-    finalize = false
-  ) => {
+  const handleQtyChange = (id: string, value: string) => {
     const index = findIndex(id);
     if (index === -1) return;
 
-    let quantity = value === "" ? 0 : parseInt(value) || 0;
-    if (finalize) {
-      quantity = Math.max(1, Math.min(quantity, maxQty));
-    }
-
+    const quantity = value === "" ? 0 : parseInt(value) || 0;
     form.setValue(`transferItems.${index}.transferQuantity`, quantity);
   };
 
@@ -255,21 +245,9 @@ function ProductsTransferTable({
               stockItem={stockItem}
               selected={isSelected(stockItem.product.id)}
               transferQuantity={getQty(stockItem.product.id)}
-              onSelect={handleToggle}
+              onSelect={() => handleToggle(stockItem.product.id)}
               onQuantityChange={(val) =>
-                handleQtyChange(
-                  stockItem.product.id,
-                  val,
-                  stockItem.quantityInStock
-                )
-              }
-              onQuantityBlur={(val) =>
-                handleQtyChange(
-                  stockItem.product.id,
-                  val,
-                  stockItem.quantityInStock,
-                  true
-                )
+                handleQtyChange(stockItem.product.id, val)
               }
             />
           ))
@@ -283,9 +261,8 @@ interface ProductTransferRowProps {
   stockItem: StockItemState;
   selected: boolean;
   transferQuantity: number;
-  onSelect: (id: string, maxQty: number) => void;
+  onSelect: () => void;
   onQuantityChange: (val: string) => void;
-  onQuantityBlur: (val: string) => void;
 }
 
 function ProductTransferRow({
@@ -294,7 +271,6 @@ function ProductTransferRow({
   transferQuantity,
   onSelect,
   onQuantityChange,
-  onQuantityBlur,
 }: ProductTransferRowProps) {
   const [inputValue, setInputValue] = useState(transferQuantity.toString());
   const { product, quantityInStock } = stockItem;
@@ -313,7 +289,7 @@ function ProductTransferRow({
       <div className="col-span-1 flex items-center">
         <Checkbox
           checked={selected}
-          onCheckedChange={() => onSelect(product.id, quantityInStock)}
+          onCheckedChange={onSelect}
           className={`data-[state=checked]:ring-1 data-[state=checked]:border-focus border-neutral ${
             isOutOfStock ? "cursor-not-allowed" : ""
           }`}
@@ -345,8 +321,6 @@ function ProductTransferRow({
           <div className="w-full max-w-[100px]">
             <Input
               type="number"
-              min={1}
-              max={quantityInStock}
               value={inputValue}
               onChange={(e) => {
                 const val = e.target.value;
@@ -355,9 +329,8 @@ function ProductTransferRow({
                   onQuantityChange(val);
                 }
               }}
-              onBlur={(e) => onQuantityBlur(e.target.value)}
               className="h-8 text-sm border-neutral focus:border-accent focus:ring-1 focus:ring-focus transition-all duration-200"
-              placeholder={`Max: ${quantityInStock}`}
+              min={1}
             />
           </div>
         ) : (

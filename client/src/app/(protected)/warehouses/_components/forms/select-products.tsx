@@ -154,8 +154,8 @@ function ProductsTable({
         <div className="grid grid-cols-12 gap-4 text-xs font-semibold uppercase tracking-wide">
           <div className="col-span-1" />
           <div className="col-span-5">Products</div>
-          <div className="col-span-3">Total Qty</div>
-          <div className="col-span-3">Stock Qty</div>
+          <div className="col-span-3">Available Stock</div>
+          <div className="col-span-3">Add Qty</div>
         </div>
       </header>
 

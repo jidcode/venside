@@ -167,9 +167,9 @@ func (c *Controller) AddProductsToWarehouse(ctx echo.Context) error {
 		return errors.ValidationError("Invalid request payload")
 	}
 
-	// if err := c.validator.ValidateStockItems(req.StockItems, warehouseID); err != nil {
-	// 	return err
-	// }
+	if err := c.validator.ValidateStockItems(req.StockItems, warehouseID); err != nil {
+		return err
+	}
 
 	if err := c.repo.AddProductsToWarehouse(warehouseID, inventoryID, req.StockItems); err != nil {
 		return logger.Error(ctx, "Failed to add products to warehouse", err, logrus.Fields{
@@ -224,13 +224,8 @@ func (c *Controller) TransferWarehouseStock(ctx echo.Context) error {
 		return errors.ValidationError("Invalid request payload")
 	}
 
-	// Basic validation
-	if req.FromWarehouseID == req.ToWarehouseID {
-		return errors.ValidationError("Source and destination warehouses cannot be the same")
-	}
-
-	if len(req.TransferItems) == 0 {
-		return errors.ValidationError("At least one product must be specified for transfer")
+	if err := c.validator.ValidateTransferItems(req.FromWarehouseID, req.ToWarehouseID, req.TransferItems); err != nil {
+		return err
 	}
 
 	if err := c.repo.TransferWarehouseStock(inventoryID, req.FromWarehouseID, req.ToWarehouseID, req.TransferItems); err != nil {
@@ -238,7 +233,6 @@ func (c *Controller) TransferWarehouseStock(ctx echo.Context) error {
 			"details":           err.Error(),
 			"from_warehouse_id": req.FromWarehouseID,
 			"to_warehouse_id":   req.ToWarehouseID,
-			"inventory_id":      inventoryID,
 		})
 	}
 

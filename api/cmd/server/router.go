@@ -6,7 +6,9 @@ import (
 	"github.com/app/venside/config"
 	"github.com/app/venside/internal/features/account/auth"
 	"github.com/app/venside/internal/features/account/inventories"
+	"github.com/app/venside/internal/features/application/customers"
 	"github.com/app/venside/internal/features/application/products"
+	"github.com/app/venside/internal/features/application/sales"
 	"github.com/app/venside/internal/features/application/warehouses"
 	"github.com/app/venside/internal/routes"
 	"github.com/app/venside/pkg/cache"
@@ -19,7 +21,7 @@ import (
 func ConfigureRoutes(e *echo.Echo, db *sqlx.DB, cache cache.RedisService, config *config.Variables) {
 	// Health check endpoint
 	e.GET("/health", func(ctx echo.Context) error {
-		return ctx.JSON(200, map[string]string{"status": "OK✅"})
+		return ctx.JSON(200, map[string]string{"status": "A-OK✅"})
 	})
 
 	// Initialize R2 client
@@ -60,4 +62,15 @@ func ConfigureRoutes(e *echo.Echo, db *sqlx.DB, cache cache.RedisService, config
 	productValidator := products.NewValidator(db)
 	productController := products.NewController(productRepo, productValidator, r2Client)
 	routes.ProductRoutes(e, productController, authService)
+
+	// Customer routes
+	customerRepo := customers.NewRepository(db, cache)
+	customerValidator := customers.NewValidator(db)
+	customerController := customers.NewController(customerRepo, customerValidator)
+	routes.CustomerRoutes(e, customerController, authService)
+
+	// Sale routes
+	saleRepo := sales.NewRepository(db, cache)
+	saleController := sales.NewController(saleRepo)
+	routes.SaleRoutes(e, saleController, authService)
 }
