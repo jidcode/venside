@@ -19,10 +19,15 @@ func ToCreateSale(req *models.SaleRequest, inventoryID uuid.UUID) *models.Sale {
 		customerID = &parsedID
 	}
 
+	customerName := ""
+	if req.CustomerName != nil {
+		customerName = *req.CustomerName
+	}
+
 	sale := &models.Sale{
 		ID:              uuid.New(),
 		CustomerID:      customerID,
-		CustomerName:    req.CustomerName,
+		CustomerName:    trim(customerName),
 		SaleDate:        saleDate,
 		TotalAmount:     req.TotalAmount,
 		Balance:         req.Balance,
@@ -40,15 +45,13 @@ func ToCreateSale(req *models.SaleRequest, inventoryID uuid.UUID) *models.Sale {
 		productID, _ := uuid.Parse(itemReq.ProductID)
 
 		sale.Items[i] = models.SaleItem{
-			ID:              uuid.New(),
-			SaleID:          sale.ID,
-			ProductID:       productID,
-			Quantity:        itemReq.Quantity,
-			UnitPrice:       itemReq.UnitPrice,
-			Subtotal:        itemReq.Subtotal,
-			DiscountAmount:  itemReq.DiscountAmount,
-			DiscountPercent: itemReq.DiscountPercent,
-			CreatedAt:       time.Now(),
+			ID:        uuid.New(),
+			SaleID:    sale.ID,
+			ProductID: productID,
+			Quantity:  itemReq.Quantity,
+			UnitPrice: itemReq.UnitPrice,
+			Subtotal:  itemReq.Subtotal,
+			CreatedAt: time.Now(),
 		}
 	}
 
@@ -67,11 +70,16 @@ func ToEditSale(req *models.SaleRequest, existing *models.Sale) *models.Sale {
 		customerID = &parsedID
 	}
 
+	customerName := existing.CustomerName
+	if req.CustomerName != nil {
+		customerName = *req.CustomerName
+	}
+
 	return &models.Sale{
 		ID:              existing.ID,
 		SaleNumber:      existing.SaleNumber,
 		CustomerID:      customerID,
-		CustomerName:    req.CustomerName,
+		CustomerName:    trim(customerName),
 		SaleDate:        saleDate,
 		TotalAmount:     req.TotalAmount,
 		Balance:         req.Balance,
@@ -106,14 +114,12 @@ func ToSaleResponse(sale *models.Sale) *models.SaleResponse {
 		response.Items = make([]models.SaleItemResponse, len(sale.Items))
 		for i, item := range sale.Items {
 			response.Items[i] = models.SaleItemResponse{
-				ID:              item.ID,
-				ProductID:       item.ProductID,
-				Quantity:        item.Quantity,
-				UnitPrice:       item.UnitPrice,
-				Subtotal:        item.Subtotal,
-				DiscountAmount:  item.DiscountAmount,
-				DiscountPercent: item.DiscountPercent,
-				CreatedAt:       item.CreatedAt,
+				ID:        item.ID,
+				ProductID: item.ProductID,
+				Quantity:  item.Quantity,
+				UnitPrice: item.UnitPrice,
+				Subtotal:  item.Subtotal,
+				CreatedAt: item.CreatedAt,
 			}
 
 			// Map product if available

@@ -1,6 +1,13 @@
-import { Warehouse } from "lucide-react";
 import * as z from "zod";
-import { id } from "zod/v4/locales";
+
+export const toCents = (val: number): number => Math.round(val * 100);
+
+/**
+ * Utility function to convert cents (integer) back to decimal amount
+ * @param cents - The amount in cents
+ * @returns The decimal amount
+ */
+export const fromCents = (cents: number): number => cents / 100;
 
 export const registerSchema = z.object({
   username: z
@@ -161,13 +168,72 @@ export const productSchema = z.object({
   costPrice: z
     .number({ invalid_type_error: "Enter an amount" })
     .min(0, "Amount must be 0 or greater")
-    .transform((val) => Math.round(val * 100)), //convert to cents
+    .transform(toCents),
   sellingPrice: z
     .number({ invalid_type_error: "Enter an amount" })
     .min(0, "Amount must be 0 or greater")
-    .transform((val) => Math.round(val * 100)), //convert to cents
+    .transform(toCents),
   categories: z.array(z.string().min(1).max(50)).optional(),
   images: z.array(z.any()).optional(),
+});
+
+export const customerSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(100, "Name must not exceed 100 characters"),
+  email: z
+    .string()
+    .email("Please enter a valid email address")
+    .max(100, "Email must not exceed 100 characters")
+    .optional()
+    .or(z.literal("")),
+  phone: z
+    .string()
+    .max(20, "Phone number must not exceed 20 characters")
+    .optional(),
+  address: z
+    .string()
+    .max(200, "Address must not exceed 200 characters")
+    .optional(),
+  customerType: z.enum(["individual", "business"], {
+    required_error: "Customer type is required",
+  }),
+});
+
+export const saleItemSchema = z.object({
+  productId: z.string().min(1, "Product is required"),
+  quantity: z.number().int().min(1, "Quantity must be at least 1"),
+  unitPrice: z.number().int().min(0, "Price cannot be negative"),
+  subtotal: z.number().int().min(0, "Subtotal cannot be negative"),
+});
+
+export const saleSchema = z.object({
+  customerId: z.string().nullable().optional(),
+  customerName: z
+    .string()
+    .max(100, "Customer name must not exceed 100 characters")
+    .nullable()
+    .optional(),
+  saleDate: z.string().optional(),
+  discountAmount: z
+    .number({ invalid_type_error: "Enter an amount" })
+    .min(0, "Discount cannot be negative")
+    .transform(toCents),
+  discountPercent: z
+    .number()
+    .int()
+    .min(0)
+    .max(100, "Discount percentage must be between 0-100"),
+  totalAmount: z.number().int().min(0, "Total amount cannot be negative"),
+  balance: z
+    .number({ invalid_type_error: "Enter an amount" })
+    .min(0, "Amount must be 0 or greater")
+    .transform(toCents),
+  paymentStatus: z
+    .enum(["pending", "partial", "paid", "overdue", "cancelled"])
+    .optional(),
+  items: z.array(saleItemSchema).min(1, "At least one item is required"),
 });
 
 // Type exports
@@ -183,3 +249,6 @@ export type TransferStockRequest = z.infer<typeof transferStockSchema>;
 export type UpdateStockQuantityRequest = z.infer<
   typeof updateStockQuantitySchema
 >;
+export type CustomerRequest = z.infer<typeof customerSchema>;
+export type SaleRequest = z.infer<typeof saleSchema>;
+export type SaleItemRequest = z.infer<typeof saleItemSchema>;

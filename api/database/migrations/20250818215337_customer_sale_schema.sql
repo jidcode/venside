@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS customers (
     email VARCHAR(100) UNIQUE,
     phone VARCHAR(20) UNIQUE,
     address TEXT,
-    customer_type VARCHAR(20) NOT NULL DEFAULT 'individual',
+    customer_type VARCHAR(20) NOT NULL,
     inventory_id UUID NOT NULL,    
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS sales (
     sale_date DATE NOT NULL DEFAULT CURRENT_DATE,
     total_amount INTEGER NOT NULL DEFAULT 0,
     balance INTEGER NOT NULL DEFAULT 0,
-    payment_status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    payment_status VARCHAR(20) NOT NULL,
     discount_amount INTEGER NOT NULL DEFAULT 0,
     discount_percent INTEGER NOT NULL DEFAULT 0,
     inventory_id UUID NOT NULL,
@@ -36,8 +36,6 @@ CREATE TABLE IF NOT EXISTS sale_items (
     quantity INTEGER NOT NULL DEFAULT 0,
     unit_price INTEGER NOT NULL,
     subtotal INTEGER NOT NULL,
-    discount_amount INTEGER NOT NULL DEFAULT 0,
-    discount_percent INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_sale_items_sale FOREIGN KEY (sale_id) REFERENCES sales (id) ON DELETE CASCADE,
     CONSTRAINT fk_sale_items_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE RESTRICT

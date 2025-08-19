@@ -24,22 +24,20 @@ type Sale struct {
 }
 
 type SaleItem struct {
-	ID              uuid.UUID `db:"id" json:"id"`
-	SaleID          uuid.UUID `db:"sale_id" json:"saleId"`
-	ProductID       uuid.UUID `db:"product_id" json:"productId"`
-	Quantity        int       `db:"quantity" json:"quantity"`
-	UnitPrice       int       `db:"unit_price" json:"unitPrice"`
-	Subtotal        int       `db:"subtotal" json:"subtotal"`
-	DiscountAmount  int       `db:"discount_amount" json:"discountAmount"`
-	DiscountPercent int       `db:"discount_percent" json:"discountPercent"`
-	CreatedAt       time.Time `db:"created_at" json:"createdAt"`
-	Product         *Product  `json:"product,omitempty"`
+	ID        uuid.UUID `db:"id" json:"id"`
+	SaleID    uuid.UUID `db:"sale_id" json:"saleId"`
+	ProductID uuid.UUID `db:"product_id" json:"productId"`
+	Quantity  int       `db:"quantity" json:"quantity"`
+	UnitPrice int       `db:"unit_price" json:"unitPrice"`
+	Subtotal  int       `db:"subtotal" json:"subtotal"`
+	CreatedAt time.Time `db:"created_at" json:"createdAt"`
+	Product   *Product  `json:"product,omitempty"`
 }
 
 // DTOs
 type SaleRequest struct {
 	CustomerID      *string           `json:"customerId"`
-	CustomerName    string            `json:"customerName" validate:"required,min=1,max=100"`
+	CustomerName    *string           `json:"customerName" validate:"min=1,max=100"`
 	SaleDate        *time.Time        `json:"saleDate"`
 	DiscountAmount  int               `json:"discountAmount" validate:"min=0"`
 	DiscountPercent int               `json:"discountPercent" validate:"min=0,max=100"`
@@ -50,12 +48,10 @@ type SaleRequest struct {
 }
 
 type SaleItemRequest struct {
-	ProductID       string `json:"productId" validate:"required,uuid"`
-	Quantity        int    `json:"quantity" validate:"required,min=1"`
-	UnitPrice       int    `json:"unitPrice" validate:"required,min=0"`
-	DiscountAmount  int    `json:"discountAmount" validate:"min=0"`
-	DiscountPercent int    `json:"discountPercent" validate:"min=0,max=100"`
-	Subtotal        int    `json:"subtotal" validate:"required,min=0"`
+	ProductID string `json:"productId" validate:"required,uuid"`
+	Quantity  int    `json:"quantity" validate:"required,min=1"`
+	UnitPrice int    `json:"unitPrice" validate:"required,min=0"`
+	Subtotal  int    `json:"subtotal" validate:"required,min=0"`
 }
 
 type SaleResponse struct {
@@ -69,32 +65,17 @@ type SaleResponse struct {
 	PaymentStatus   string             `json:"paymentStatus"`
 	DiscountAmount  int                `json:"discountAmount"`
 	DiscountPercent int                `json:"discountPercent"`
-	InventoryID     uuid.UUID          `json:"inventoryId"`
 	CreatedAt       time.Time          `json:"createdAt"`
 	UpdatedAt       time.Time          `json:"updatedAt"`
 	Items           []SaleItemResponse `json:"items,omitempty"`
 }
 
 type SaleItemResponse struct {
-	ID              uuid.UUID        `json:"id"`
-	ProductID       uuid.UUID        `json:"productId"`
-	Quantity        int              `json:"quantity"`
-	UnitPrice       int              `json:"unitPrice"`
-	DiscountAmount  int              `json:"discountAmount"`
-	DiscountPercent int              `json:"discountPercent"`
-	Subtotal        int              `json:"subtotal"`
-	CreatedAt       time.Time        `json:"createdAt"`
-	Product         *ProductResponse `json:"product,omitempty"`
+	ID        uuid.UUID        `json:"id"`
+	ProductID uuid.UUID        `json:"productId"`
+	Quantity  int              `json:"quantity"`
+	UnitPrice int              `json:"unitPrice"`
+	Subtotal  int              `json:"subtotal"`
+	CreatedAt time.Time        `json:"createdAt"`
+	Product   *ProductResponse `json:"product,omitempty"`
 }
-
-// type AddItemToSaleRequest struct {
-// 	ProductID       string `json:"productId" validate:"required,uuid"`
-// 	Quantity        int    `json:"quantity" validate:"required,min=1"`
-// 	UnitPrice       int    `json:"unitPrice" validate:"required,min=0"`
-// 	DiscountAmount  int    `json:"discountAmount" validate:"min=0"`
-// 	DiscountPercent int    `json:"discountPercent" validate:"min=0,max=100"`
-// }
-
-// type UpdateSaleStatusRequest struct {
-// 	PaymentStatus string `json:"paymentStatus" validate:"required,oneof=pending partial paid overdue cancelled"`
-// }

@@ -29,20 +29,20 @@ export const SidebarRoutes = [
     icon: PiWarehouseFill,
   },
   {
+    title: "Customers",
+    url: "/customers",
+    icon: RiContactsBook3Fill,
+  },
+  {
     title: "Sales",
     url: "/sales",
     icon: MdShoppingCart,
   },
-  {
-    title: "Purchases",
-    url: "/purchases",
-    icon: RiShoppingBasketFill,
-  },
-  {
-    title: "Contacts",
-    url: "/contacts",
-    icon: RiContactsBook3Fill,
-  },
+  // {
+  //   title: "Purchases",
+  //   url: "/purchases",
+  //   icon: RiShoppingBasketFill,
+  // },
 ];
 
 export function SideContent({ isOpen }: { isOpen: boolean }) {

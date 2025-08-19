@@ -120,3 +120,43 @@ export interface ProductCategoryState {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface CustomerState {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  customerType: "individual" | "business";
+  inventoryId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SaleState {
+  id: string;
+  saleNumber: string;
+  customerId: string | null;
+  customerName: string;
+  saleDate: string;
+  totalAmount: number;
+  balance: number;
+  paymentStatus: "pending" | "partial" | "paid" | "overdue" | "cancelled";
+  discountAmount: number;
+  discountPercent: number;
+  inventoryId: string;
+  createdAt: string;
+  updatedAt: string;
+  items?: SaleItemState[];
+}
+
+export interface SaleItemState {
+  id: string;
+  saleId: string;
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+  createdAt: string;
+  product?: ProductState;
+}

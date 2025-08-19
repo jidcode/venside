@@ -53,24 +53,24 @@ func (r *Repository) ListSales(inventoryID uuid.UUID) ([]models.Sale, error) {
 
 	// For each sale, get its items with product details
 	for i := range sales {
+		// In both ListSales and GetSale methods, update the itemsQuery to:
 		itemsQuery := `
-			SELECT 
-				si.id, si.sale_id, si.product_id, si.quantity, 
-				si.unit_price, si.subtotal, si.discount_amount, 
-				si.discount_percent, si.created_at,
-				p.id as "product.id", p.name as "product.name", 
-				p.code as "product.code", p.sku as "product.sku",
-				p.brand as "product.brand", p.model as "product.model",
-				p.description as "product.description", p.total_quantity as "product.total_quantity",
-				p.total_stock as "product.total_stock", p.restock_level as "product.restock_level",
-				p.optimal_level as "product.optimal_level", p.cost_price as "product.cost_price",
-				p.selling_price as "product.selling_price", p.inventory_id as "product.inventory_id",
-				p.created_at as "product.created_at", p.updated_at as "product.updated_at"
-			FROM sale_items si
-			LEFT JOIN products p ON si.product_id = p.id
-			WHERE si.sale_id = $1
-			ORDER BY si.created_at ASC
-		`
+    SELECT 
+        si.id, si.sale_id, si.product_id, si.quantity, 
+        si.unit_price, si.subtotal, si.created_at,
+        p.id as "product.id", p.name as "product.name", 
+        p.code as "product.code", p.sku as "product.sku",
+        p.brand as "product.brand", p.model as "product.model",
+        p.description as "product.description", p.total_quantity as "product.total_quantity",
+        p.total_stock as "product.total_stock", p.restock_level as "product.restock_level",
+        p.optimal_level as "product.optimal_level", p.cost_price as "product.cost_price",
+        p.selling_price as "product.selling_price", p.inventory_id as "product.inventory_id",
+        p.created_at as "product.created_at", p.updated_at as "product.updated_at"
+    FROM sale_items si
+    LEFT JOIN products p ON si.product_id = p.id
+    WHERE si.sale_id = $1
+    ORDER BY si.created_at ASC
+`
 
 		type SaleItemWithProduct struct {
 			models.SaleItem
@@ -122,23 +122,22 @@ func (r *Repository) GetSale(saleID uuid.UUID) (models.Sale, error) {
 	}
 
 	itemsQuery := `
-		SELECT 
-			si.id, si.sale_id, si.product_id, si.quantity, 
-			si.unit_price, si.subtotal, si.discount_amount, 
-			si.discount_percent, si.created_at,
-			p.id as "product.id", p.name as "product.name", 
-			p.code as "product.code", p.sku as "product.sku",
-			p.brand as "product.brand", p.model as "product.model",
-			p.description as "product.description", p.total_quantity as "product.total_quantity",
-			p.total_stock as "product.total_stock", p.restock_level as "product.restock_level",
-			p.optimal_level as "product.optimal_level", p.cost_price as "product.cost_price",
-			p.selling_price as "product.selling_price", p.inventory_id as "product.inventory_id",
-			p.created_at as "product.created_at", p.updated_at as "product.updated_at"
-		FROM sale_items si
-		LEFT JOIN products p ON si.product_id = p.id
-		WHERE si.sale_id = $1
-		ORDER BY si.created_at ASC
-	`
+    SELECT 
+        si.id, si.sale_id, si.product_id, si.quantity, 
+        si.unit_price, si.subtotal, si.created_at,
+        p.id as "product.id", p.name as "product.name", 
+        p.code as "product.code", p.sku as "product.sku",
+        p.brand as "product.brand", p.model as "product.model",
+        p.description as "product.description", p.total_quantity as "product.total_quantity",
+        p.total_stock as "product.total_stock", p.restock_level as "product.restock_level",
+        p.optimal_level as "product.optimal_level", p.cost_price as "product.cost_price",
+        p.selling_price as "product.selling_price", p.inventory_id as "product.inventory_id",
+        p.created_at as "product.created_at", p.updated_at as "product.updated_at"
+    FROM sale_items si
+    LEFT JOIN products p ON si.product_id = p.id
+    WHERE si.sale_id = $1
+    ORDER BY si.created_at ASC
+`
 
 	type SaleItemWithProduct struct {
 		models.SaleItem
@@ -203,11 +202,9 @@ func (r *Repository) CreateSale(sale *models.Sale) error {
 	if len(sale.Items) > 0 {
 		itemQuery := `
 			INSERT INTO sale_items (
-				id, sale_id, product_id, quantity, unit_price,
-				subtotal, discount_amount, discount_percent, created_at
+				id, sale_id, product_id, quantity, unit_price, subtotal, created_at
 			) VALUES (
-				:id, :sale_id, :product_id, :quantity, :unit_price,
-				:subtotal, :discount_amount, :discount_percent, :created_at
+				:id, :sale_id, :product_id, :quantity, :unit_price,	:subtotal, :created_at
 			)
 		`
 		for _, item := range sale.Items {
@@ -263,11 +260,9 @@ func (r *Repository) UpdateSale(sale *models.Sale) error {
 	if len(sale.Items) > 0 {
 		itemQuery := `
 			INSERT INTO sale_items (
-				id, sale_id, product_id, quantity, unit_price,
-				subtotal, discount_amount, discount_percent, created_at
+				id, sale_id, product_id, quantity, unit_price, subtotal, created_at
 			) VALUES (
-				:id, :sale_id, :product_id, :quantity, :unit_price,
-				:subtotal, :discount_amount, :discount_percent, :created_at
+				:id, :sale_id, :product_id, :quantity, :unit_price,	:subtotal, :created_at
 			)
 		`
 		for _, item := range sale.Items {
