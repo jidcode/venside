@@ -46,7 +46,7 @@ type PurchaseRequest struct {
 	ShippingCost    int                   `json:"shippingCost" validate:"min=0"`
 	TotalAmount     int                   `json:"totalAmount" validate:"required,min=0"`
 	PaymentStatus   string                `json:"paymentStatus" validate:"omitempty,oneof=pending partial paid overdue cancelled"`
-	PurchaseStatus  string                `json:"purchaseStatus" validate:"omitempty,oneof=draft ordered received partial cancelled"`
+	PurchaseStatus  string                `json:"purchaseStatus" validate:"omitempty,oneof=draft ordered shipped received cancelled"`
 	DiscountAmount  int                   `json:"discountAmount" validate:"min=0"`
 	DiscountPercent int                   `json:"discountPercent" validate:"min=0,max=100"`
 	Items           []PurchaseItemRequest `json:"items" validate:"required,min=1,dive"`

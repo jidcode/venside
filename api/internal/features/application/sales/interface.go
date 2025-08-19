@@ -10,7 +10,6 @@ type SaleRepository interface {
 	ListSales(inventoryID uuid.UUID) ([]models.Sale, error)
 	GetSale(saleID uuid.UUID) (models.Sale, error)
 	CreateSale(sale *models.Sale) error
-	UpdateSale(sale *models.Sale) error
 	DeleteSale(saleID, inventoryID uuid.UUID) error
 }
 
@@ -18,6 +17,5 @@ type SaleController interface {
 	ListSales(ctx echo.Context) error
 	GetSale(ctx echo.Context) error
 	CreateSale(ctx echo.Context) error
-	UpdateSale(ctx echo.Context) error
 	DeleteSale(ctx echo.Context) error
 }

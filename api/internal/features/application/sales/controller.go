@@ -87,38 +87,6 @@ func (c *Controller) CreateSale(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, response)
 }
 
-func (c *Controller) UpdateSale(ctx echo.Context) error {
-	saleID, err := uuid.Parse(ctx.Param("saleId"))
-	if err != nil {
-		return errors.ValidationError("Invalid sale ID")
-	}
-
-	var req models.SaleRequest
-	if err := utils.BindAndValidateRequest(ctx, &req); err != nil {
-		return err
-	}
-
-	existingSale, err := c.repo.GetSale(saleID)
-	if err != nil {
-		return logger.Error(ctx, "Sale not found", err, logrus.Fields{
-			"details": err.Error(),
-			"sale_id": saleID,
-		})
-	}
-
-	updatedSale := mapper.ToEditSale(&req, &existingSale)
-
-	if err := c.repo.UpdateSale(updatedSale); err != nil {
-		return logger.Error(ctx, "Failed to update sale", err, logrus.Fields{
-			"details": err.Error(),
-			"sale_id": saleID,
-		})
-	}
-
-	response := mapper.ToSaleResponse(updatedSale)
-	return ctx.JSON(http.StatusOK, response)
-}
-
 func (c *Controller) DeleteSale(ctx echo.Context) error {
 	inventoryID, err := uuid.Parse(ctx.Param("inventoryId"))
 	if err != nil {

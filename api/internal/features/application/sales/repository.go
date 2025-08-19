@@ -224,65 +224,6 @@ func (r *Repository) CreateSale(sale *models.Sale) error {
 	return nil
 }
 
-func (r *Repository) UpdateSale(sale *models.Sale) error {
-	tx, err := r.db.Beginx()
-	if err != nil {
-		return errors.DatabaseError(err, "Error starting transaction")
-	}
-	defer tx.Rollback()
-
-	// Update sale
-	saleQuery := `
-		UPDATE sales SET 
-			customer_id = :customer_id,
-			customer_name = :customer_name,
-			sale_date = :sale_date,
-			total_amount = :total_amount,
-			balance = :balance,
-			payment_status = :payment_status,
-			discount_amount = :discount_amount,
-			discount_percent = :discount_percent,
-			updated_at = :updated_at
-		WHERE id = :id
-	`
-	_, err = tx.NamedExec(saleQuery, sale)
-	if err != nil {
-		return errors.DatabaseError(err, "Error updating sale")
-	}
-
-	// Delete existing sale items
-	_, err = tx.Exec("DELETE FROM sale_items WHERE sale_id = $1", sale.ID)
-	if err != nil {
-		return errors.DatabaseError(err, "Error deleting existing sale items")
-	}
-
-	// Insert new sale items
-	if len(sale.Items) > 0 {
-		itemQuery := `
-			INSERT INTO sale_items (
-				id, sale_id, product_id, quantity, unit_price, subtotal, created_at
-			) VALUES (
-				:id, :sale_id, :product_id, :quantity, :unit_price,	:subtotal, :created_at
-			)
-		`
-		for _, item := range sale.Items {
-			_, err = tx.NamedExec(itemQuery, item)
-			if err != nil {
-				return errors.DatabaseError(err, "Error creating sale item")
-			}
-		}
-	}
-
-	// Commit transaction
-	if err := tx.Commit(); err != nil {
-		return errors.DatabaseError(err, "Error committing transaction")
-	}
-
-	r.invalidateSaleCaches(sale.ID, sale.InventoryID)
-
-	return nil
-}
-
 func (r *Repository) DeleteSale(saleID, inventoryID uuid.UUID) error {
 	tx, err := r.db.Beginx()
 	if err != nil {

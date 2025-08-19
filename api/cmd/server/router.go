@@ -8,7 +8,9 @@ import (
 	"github.com/app/venside/internal/features/account/inventories"
 	"github.com/app/venside/internal/features/application/customers"
 	"github.com/app/venside/internal/features/application/products"
+	"github.com/app/venside/internal/features/application/purchases"
 	"github.com/app/venside/internal/features/application/sales"
+	"github.com/app/venside/internal/features/application/vendors"
 	"github.com/app/venside/internal/features/application/warehouses"
 	"github.com/app/venside/internal/routes"
 	"github.com/app/venside/pkg/cache"
@@ -73,4 +75,15 @@ func ConfigureRoutes(e *echo.Echo, db *sqlx.DB, cache cache.RedisService, config
 	saleRepo := sales.NewRepository(db, cache)
 	saleController := sales.NewController(saleRepo)
 	routes.SaleRoutes(e, saleController, authService)
+
+	// Vendor routes
+	vendorRepo := vendors.NewRepository(db, cache)
+	vendorValidator := vendors.NewValidator(db)
+	vendorController := vendors.NewController(vendorRepo, vendorValidator)
+	routes.VendorRoutes(e, vendorController, authService)
+
+	// Purchase routes
+	purchaseRepo := purchases.NewRepository(db, cache)
+	purchaseController := purchases.NewController(purchaseRepo)
+	routes.PurchaseRoutes(e, purchaseController, authService)
 }

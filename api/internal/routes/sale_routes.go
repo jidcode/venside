@@ -20,6 +20,5 @@ func SaleRoutes(e *echo.Echo, controller sales.SaleController, service auth.Auth
 	salesGroup := api.Group("/sales")
 	salesGroup.Use(auth.CSRFMiddleware(service))
 	salesGroup.POST("", controller.CreateSale)
-	salesGroup.PUT("/:saleId", controller.UpdateSale)
 	salesGroup.DELETE("/:saleId", controller.DeleteSale)
 }
