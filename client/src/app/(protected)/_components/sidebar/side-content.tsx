@@ -2,12 +2,13 @@
 
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import {
+  RiBillFill,
   RiBox1Fill,
   RiContactsBook3Fill,
   RiShoppingBasketFill,
 } from "react-icons/ri";
 import { usePathname } from "next/navigation";
-import { PiWarehouseFill } from "react-icons/pi";
+import { PiClipboardFill, PiWarehouseFill } from "react-icons/pi";
 import { MdShoppingCart } from "react-icons/md";
 import Link from "next/link";
 import { cn } from "@/core/lib/utils";
@@ -38,11 +39,16 @@ export const SidebarRoutes = [
     url: "/sales",
     icon: MdShoppingCart,
   },
-  // {
-  //   title: "Purchases",
-  //   url: "/purchases",
-  //   icon: RiShoppingBasketFill,
-  // },
+  {
+    title: "Vendors",
+    url: "/vendors",
+    icon: RiBillFill,
+  },
+  {
+    title: "Purchases",
+    url: "/purchases",
+    icon: RiShoppingBasketFill,
+  },
 ];
 
 export function SideContent({ isOpen }: { isOpen: boolean }) {

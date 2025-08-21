@@ -6,11 +6,7 @@ import useQuery from "@/core/hooks/use-query";
 import useInventoryStore from "@/core/stores/inventory-store";
 import { errorMessage } from "../lib/errors";
 import { SaleState } from "../schema/types";
-import {
-  createSaleAction,
-  updateSaleAction,
-  deleteSaleAction,
-} from "@/server/actions/sale";
+import { createSaleAction, deleteSaleAction } from "@/server/actions/sale";
 
 export function getAllSales() {
   const inventoryId = useInventoryStore((state) => state.currentInventory?.id);
@@ -51,32 +47,6 @@ export function useSaleService() {
     }
   };
 
-  const updateSale = async (id: string, formData: SaleRequest) => {
-    if (!inventoryId) {
-      return { success: false, error: "No inventory selected" };
-    }
-    try {
-      const response = await updateSaleAction(id, inventoryId, formData);
-
-      if (response.success) {
-        await mutate(
-          data?.map((sale) => (sale.id === id ? response.data : sale)),
-          false
-        );
-        window.location.reload();
-        return { success: true, data: response.data };
-      } else {
-        return { success: false, error: response.error };
-      }
-    } catch (error) {
-      console.error("Update sale error:", error);
-      return {
-        success: false,
-        error: errorMessage(error),
-      };
-    }
-  };
-
   const deleteSale = async (id: string) => {
     if (!inventoryId) {
       return { success: false, error: "No inventory selected" };
@@ -109,7 +79,6 @@ export function useSaleService() {
     error,
 
     createSale,
-    updateSale,
     deleteSale,
   };
 }

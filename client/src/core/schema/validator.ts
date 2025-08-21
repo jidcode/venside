@@ -1,12 +1,6 @@
 import * as z from "zod";
 
 export const toCents = (val: number): number => Math.round(val * 100);
-
-/**
- * Utility function to convert cents (integer) back to decimal amount
- * @param cents - The amount in cents
- * @returns The decimal amount
- */
 export const fromCents = (cents: number): number => cents / 100;
 
 export const registerSchema = z.object({
@@ -236,6 +230,76 @@ export const saleSchema = z.object({
   items: z.array(saleItemSchema).min(1, "At least one item is required"),
 });
 
+export const vendorSchema = z.object({
+  companyName: z
+    .string()
+    .min(1, "Company name is required")
+    .max(100, "Company name must not exceed 100 characters"),
+  contactName: z
+    .string()
+    .max(100, "Contact name must not exceed 100 characters")
+    .optional()
+    .or(z.literal("")),
+  phone: z
+    .string()
+    .max(100, "Phone number must not exceed 100 characters")
+    .optional()
+    .or(z.literal("")),
+  email: z
+    .string()
+    .email("Please enter a valid email address")
+    .max(100, "Email must not exceed 100 characters")
+    .optional()
+    .or(z.literal("")),
+  website: z
+    .string()
+    .max(100, "Website must not exceed 100 characters")
+    .optional()
+    .or(z.literal("")),
+  address: z
+    .string()
+    .max(200, "Address must not exceed 200 characters")
+    .optional()
+    .or(z.literal("")),
+});
+
+export const purchaseItemSchema = z.object({
+  productId: z.string().min(1, "Product is required"),
+  quantity: z.number().int().min(1, "Quantity must be at least 1"),
+  unitPrice: z.number().int().min(0, "Price cannot be negative"),
+  subtotal: z.number().int().min(0, "Subtotal cannot be negative"),
+});
+
+export const purchaseSchema = z.object({
+  vendorId: z.string().nullable().optional(),
+  vendorName: z
+    .string()
+    .max(100, "Vendor name must not exceed 100 characters")
+    .nullable()
+    .optional(),
+  purchaseDate: z.string().optional(),
+  eta: z.string().nullable().optional(),
+  deliveryDate: z.string().nullable().optional(),
+  shippingCost: z
+    .number({ invalid_type_error: "Enter an amount" })
+    .min(0, "Shipping cost cannot be negative")
+    .transform(toCents),
+  totalAmount: z.number().int().min(0, "Total amount cannot be negative"),
+  paymentStatus: z
+    .enum(["pending", "partial", "paid", "overdue", "cancelled"])
+    .optional(),
+  purchaseStatus: z
+    .enum(["draft", "ordered", "shipped", "received", "cancelled"])
+    .optional(),
+  discountAmount: z.number().int().min(0, "Discount cannot be negative"),
+  discountPercent: z
+    .number()
+    .int()
+    .min(0)
+    .max(100, "Discount percentage must be between 0-100"),
+  items: z.array(purchaseItemSchema).min(1, "At least one item is required"),
+});
+
 // Type exports
 export type RegisterRequest = z.infer<typeof registerSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
@@ -252,3 +316,6 @@ export type UpdateStockQuantityRequest = z.infer<
 export type CustomerRequest = z.infer<typeof customerSchema>;
 export type SaleRequest = z.infer<typeof saleSchema>;
 export type SaleItemRequest = z.infer<typeof saleItemSchema>;
+export type VendorRequest = z.infer<typeof vendorSchema>;
+export type PurchaseRequest = z.infer<typeof purchaseSchema>;
+export type PurchaseItemRequest = z.infer<typeof purchaseItemSchema>;

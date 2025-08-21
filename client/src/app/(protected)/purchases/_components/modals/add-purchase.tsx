@@ -13,11 +13,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/core/components/ui/sheet";
-import { SaleRequest, saleSchema } from "@/core/schema/validator";
+import { PurchaseRequest, purchaseSchema } from "@/core/schema/validator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useSaleService } from "@/core/services/sales";
+import { usePurchaseService } from "@/core/services/purchases";
 import { RiLoader2Fill } from "react-icons/ri";
 import {
   DisplayErrors,
@@ -25,9 +25,9 @@ import {
 } from "@/core/components/elements/error-display";
 import { AppError } from "@/core/lib/errors";
 import { Check, Plus } from "lucide-react";
-import SaleFormFields from "../forms/sale-form-fields";
+import PurchaseFormFields from "../forms/purchase-form-fields";
 
-export default function AddSaleSheet() {
+export default function AddPurchaseSheet() {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleClose = () => setIsOpen(false);
@@ -37,44 +37,48 @@ export default function AddSaleSheet() {
         <SheetTrigger asChild>
           <Button variant="secondary">
             <Plus className="size-5" />
-            <span>New Sale</span>
+            <span>New Purchase</span>
           </Button>
         </SheetTrigger>
 
-        <SheetTitle className="sr-only">Add Sale</SheetTitle>
+        <SheetTitle className="sr-only">Add Purchase</SheetTitle>
 
-        <SheetContent className="flex flex-col bg-primary border-none h-full min-w-full md:min-w-1/2 overflow-y-auto">
-          <AddSaleForm closeSheet={handleClose} />
+        <SheetContent className="flex flex-col bg-primary border-none h-full min-w-full md:min-w-4/5 overflow-y-auto">
+          <AddPurchaseForm closeSheet={handleClose} />
         </SheetContent>
       </Sheet>
     </>
   );
 }
 
-function AddSaleForm({ closeSheet }: { closeSheet: () => void }) {
+function AddPurchaseForm({ closeSheet }: { closeSheet: () => void }) {
   const [errorResponse, setErrorResponse] = useState<string | null>(null);
-  const { createSale } = useSaleService();
+  const { createPurchase } = usePurchaseService();
 
   const today = new Date();
 
-  const form = useForm<SaleRequest>({
-    resolver: zodResolver(saleSchema),
+  const form = useForm<PurchaseRequest>({
+    resolver: zodResolver(purchaseSchema),
     defaultValues: {
-      saleDate: today.toISOString(),
+      purchaseDate: today.toISOString(),
       paymentStatus: "pending",
+      purchaseStatus: "draft",
+      eta: "",
+      deliveryDate: "",
+      shippingCost: 0,
       discountAmount: 0,
       discountPercent: 0,
       totalAmount: 0,
-      balance: 0,
       items: [],
     },
   });
 
-  const action: SubmitHandler<SaleRequest> = async (formData) => {
+  const action: SubmitHandler<PurchaseRequest> = async (formData) => {
     setErrorResponse(null);
 
+    console.log("DATA", formData);
     try {
-      const response = await createSale(formData);
+      const response = await createPurchase(formData);
       console.log("response", response);
 
       if (response?.success) {
@@ -98,16 +102,16 @@ function AddSaleForm({ closeSheet }: { closeSheet: () => void }) {
   return (
     <form onSubmit={form.handleSubmit(action)}>
       <Card className="border-none shadow-none text-foreground p-0">
-        <CardHeader className="sticky top-0 bg-accent/5">
-          <div className="flex items-center justify-between px-4 py-6">
-            <CardTitle className="text-xl">New Sale</CardTitle>
+        <CardHeader className="sticky top-0 bg-primary shadow-sm">
+          <div className="flex items-center justify-between p-4">
+            <CardTitle className="text-xl">New Purchase</CardTitle>
 
             <div className="flex items-center gap-2">
               <Button type="submit" disabled={isSubmitting} variant="secondary">
                 {isSubmitting ? (
                   <span className="flex items-center gap-1 text-sm">
                     <RiLoader2Fill className="h-4 w-4 animate-spin" />
-                    <p>Creating Sale...</p>
+                    <p>Creating Purchase...</p>
                   </span>
                 ) : (
                   <span className="flex items-center gap-1">
@@ -132,7 +136,7 @@ function AddSaleForm({ closeSheet }: { closeSheet: () => void }) {
         <CardContent className="p-4 lg:p-10">
           {errorResponse && <DisplayErrors serverErrors={serverErrors} />}
 
-          <SaleFormFields form={form} />
+          <PurchaseFormFields form={form} />
         </CardContent>
       </Card>
     </form>

@@ -13,21 +13,26 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/core/components/ui/sheet";
-import { SaleRequest, saleSchema } from "@/core/schema/validator";
+import { VendorRequest, vendorSchema } from "@/core/schema/validator";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { PenSquare } from "lucide-react";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useSaleService } from "@/core/services/sales";
 import { RiLoader2Fill } from "react-icons/ri";
+import { VendorState } from "@/core/schema/types";
+import { useVendorService } from "@/core/services/vendors";
+import { AppError } from "@/core/lib/errors";
 import {
   DisplayErrors,
   parseServerErrors,
 } from "@/core/components/elements/error-display";
-import { AppError } from "@/core/lib/errors";
-import { Check, Plus } from "lucide-react";
-import SaleFormFields from "../forms/sale-form-fields";
+import VendorFormFields from "../forms/vendor-form-fields";
 
-export default function NewSaleSheet() {
+export interface VendorParamProps {
+  vendor: VendorState;
+}
+
+export default function EditVendorSheet({ vendor }: VendorParamProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleClose = () => setIsOpen(false);
@@ -36,46 +41,46 @@ export default function NewSaleSheet() {
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button variant="secondary">
-            <Plus className="size-5" />
-            <span>New Sale</span>
+            <PenSquare className="size-3.5 mt-0.5" />
+            <span>Edit Vendor</span>
           </Button>
         </SheetTrigger>
+        <SheetTitle className="sr-only">Edit Vendor</SheetTitle>
 
-        <SheetTitle className="sr-only">Add Sale</SheetTitle>
-
-        <SheetContent className="flex flex-col bg-primary border-none h-full min-w-full md:min-w-1/2">
-          <AddSaleForm closeSheet={handleClose} />
+        <SheetContent className="flex flex-col bg-primary border-none h-full min-w-full md:min-w-1/3">
+          <EditVendorForm vendor={vendor} closeSheet={handleClose} />
         </SheetContent>
       </Sheet>
     </>
   );
 }
 
-function AddSaleForm({ closeSheet }: { closeSheet: () => void }) {
+interface EditVendorFormProps {
+  closeSheet: () => void;
+  vendor: VendorState;
+}
+
+function EditVendorForm({ closeSheet, vendor }: EditVendorFormProps) {
   const [errorResponse, setErrorResponse] = useState<string | null>(null);
-  const { createSale } = useSaleService();
+  const { updateVendor } = useVendorService();
 
-  const today = new Date();
-
-  const form = useForm<SaleRequest>({
-    resolver: zodResolver(saleSchema),
+  const form = useForm<VendorRequest>({
+    resolver: zodResolver(vendorSchema),
     defaultValues: {
-      saleDate: today.toISOString(),
-      paymentStatus: "pending",
-      discountAmount: 0,
-      discountPercent: 0,
-      totalAmount: 0,
-      balance: 0,
-      items: [],
+      companyName: vendor.companyName,
+      contactName: vendor.contactName ?? "",
+      email: vendor.email ?? "",
+      phone: vendor.phone ?? "",
+      website: vendor.website ?? "",
+      address: vendor.address ?? "",
     },
   });
 
-  const action: SubmitHandler<SaleRequest> = async (formData) => {
+  const action: SubmitHandler<VendorRequest> = async (data) => {
     setErrorResponse(null);
 
     try {
-      const response = await createSale(formData);
-      console.log("response", response);
+      const response = await updateVendor(vendor.id, data);
 
       if (response?.success) {
         form.reset();
@@ -100,19 +105,17 @@ function AddSaleForm({ closeSheet }: { closeSheet: () => void }) {
       <Card className="border-none shadow-none text-foreground p-0">
         <CardHeader className="sticky top-0 bg-accent/5">
           <div className="flex items-center justify-between px-4 py-6">
-            <CardTitle className="text-xl">New Sale</CardTitle>
+            <CardTitle className="text-xl">Edit Vendor</CardTitle>
 
             <div className="flex items-center gap-2">
               <Button type="submit" disabled={isSubmitting} variant="secondary">
                 {isSubmitting ? (
                   <span className="flex items-center gap-1 text-sm">
                     <RiLoader2Fill className="h-4 w-4 animate-spin" />
-                    <p>Creating Sale...</p>
+                    <p>Saving changes...</p>
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1">
-                    <Check /> Confirm
-                  </span>
+                  <span>Confirm</span>
                 )}
               </Button>
 
@@ -129,10 +132,10 @@ function AddSaleForm({ closeSheet }: { closeSheet: () => void }) {
           </div>
         </CardHeader>
 
-        <CardContent className="p-4 lg:p-10">
+        <CardContent className="overflow-y-auto p-8 lg:p-10">
           {errorResponse && <DisplayErrors serverErrors={serverErrors} />}
 
-          <SaleFormFields form={form} />
+          <VendorFormFields form={form} />
         </CardContent>
       </Card>
     </form>

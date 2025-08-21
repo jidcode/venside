@@ -160,3 +160,47 @@ export interface SaleItemState {
   createdAt: string;
   product?: ProductState;
 }
+
+export interface VendorState {
+  id: string;
+  companyName: string;
+  contactName: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  address: string | null;
+  inventoryId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PurchaseState {
+  id: string;
+  purchaseNumber: string;
+  vendorId: string | null;
+  vendorName: string;
+  purchaseDate: string;
+  eta: string | null;
+  deliveryDate: string | null;
+  shippingCost: number;
+  totalAmount: number;
+  paymentStatus: "pending" | "partial" | "paid" | "overdue" | "cancelled";
+  purchaseStatus: "draft" | "ordered" | "shipped" | "received" | "cancelled";
+  discountAmount: number;
+  discountPercent: number;
+  inventoryId: string;
+  createdAt: string;
+  updatedAt: string;
+  items?: PurchaseItemState[];
+}
+
+export interface PurchaseItemState {
+  id: string;
+  purchaseId: string;
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+  createdAt: string;
+  product?: ProductState;
+}
