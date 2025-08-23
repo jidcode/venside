@@ -6,6 +6,7 @@ import (
 	"github.com/app/venside/config"
 	"github.com/app/venside/internal/features/account/auth"
 	"github.com/app/venside/internal/features/account/inventories"
+	"github.com/app/venside/internal/features/account/statistics"
 	"github.com/app/venside/internal/features/application/customers"
 	"github.com/app/venside/internal/features/application/products"
 	"github.com/app/venside/internal/features/application/purchases"
@@ -86,4 +87,9 @@ func ConfigureRoutes(e *echo.Echo, db *sqlx.DB, cache cache.RedisService, config
 	purchaseRepo := purchases.NewRepository(db, cache)
 	purchaseController := purchases.NewController(purchaseRepo)
 	routes.PurchaseRoutes(e, purchaseController, authService)
+
+	// Statistics routes
+	statsRepo := statistics.NewRepository(db, cache)
+	statsController := statistics.NewController(statsRepo)
+	routes.StatisticsRoutes(e, statsController, authService)
 }

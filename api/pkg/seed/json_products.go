@@ -15,9 +15,9 @@ const ProductDataJSON = `[
     "optimalLevel": 180,
     "costPrice": 90000,
     "sellingPrice": 120000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-01T08:00:00Z",
-    "updatedAt": "2025-07-25T10:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-03-15T08:00:00Z",
+    "updatedAt": "2025-08-20T10:00:00Z"
   },
   {
     "id": "9b9895e2-61d3-4d71-baa2-ec2ccdc4c313",
@@ -27,15 +27,15 @@ const ProductDataJSON = `[
     "brand": "OnePlus",
     "model": "Nord 3",
     "description": "Latest OnePlus phone model Nord 3 with high-end specs.",
-    "totalQuantity": 13,
+    "totalQuantity": 0,
     "totalStock": 0,
     "restockLevel": 10,
     "optimalLevel": 113,
     "costPrice": 82004,
     "sellingPrice": 122877,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-02T08:00:00Z",
-    "updatedAt": "2025-07-12T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2025-01-10T08:00:00Z",
+    "updatedAt": "2025-08-22T08:00:00Z"
   },
   {
     "id": "a5357d69-b7f7-4b3b-a690-f7a65a3a9b83",
@@ -51,9 +51,9 @@ const ProductDataJSON = `[
     "optimalLevel": 138,
     "costPrice": 82086,
     "sellingPrice": 107912,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-03T08:00:00Z",
-    "updatedAt": "2025-07-13T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2025-05-20T08:00:00Z",
+    "updatedAt": "2025-08-21T08:00:00Z"
   },
   {
     "id": "c481a25f-00f9-4e10-83a2-b3629a1b0383",
@@ -69,9 +69,9 @@ const ProductDataJSON = `[
     "optimalLevel": 138,
     "costPrice": 78419,
     "sellingPrice": 104107,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-04T08:00:00Z",
-    "updatedAt": "2025-07-14T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-02-14T08:00:00Z",
+    "updatedAt": "2025-08-19T08:00:00Z"
   },
   {
     "id": "33e04f99-73df-4c66-9f5b-4796c1cba5bb",
@@ -87,9 +87,9 @@ const ProductDataJSON = `[
     "optimalLevel": 135,
     "costPrice": 93329,
     "sellingPrice": 121861,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-05T08:00:00Z",
-    "updatedAt": "2025-07-15T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-08-05T08:00:00Z",
+    "updatedAt": "2025-08-18T08:00:00Z"
   },
   {
     "id": "30efee68-6d7b-4c36-baa5-1cb06a3f1e3a",
@@ -105,9 +105,9 @@ const ProductDataJSON = `[
     "optimalLevel": 140,
     "costPrice": 77696,
     "sellingPrice": 113263,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-06T08:00:00Z",
-    "updatedAt": "2025-07-16T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-06-06T08:00:00Z",
+    "updatedAt": "2025-08-16T08:00:00Z"
   },
   {
     "id": "13e62ec4-4e6e-4e3e-9c31-05718795c74f",
@@ -123,9 +123,9 @@ const ProductDataJSON = `[
     "optimalLevel": 111,
     "costPrice": 76774,
     "sellingPrice": 86456,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-07T08:00:00Z",
-    "updatedAt": "2025-07-17T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-01-15T08:00:00Z",
+    "updatedAt": "2025-08-17T08:00:00Z"
   },
   {
     "id": "3a204245-6604-408a-8eb1-7b382d96fa1c",
@@ -141,9 +141,9 @@ const ProductDataJSON = `[
     "optimalLevel": 139,
     "costPrice": 94055,
     "sellingPrice": 110996,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-08T08:00:00Z",
-    "updatedAt": "2025-07-18T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-09-08T08:00:00Z",
+    "updatedAt": "2025-08-18T08:00:00Z"
   },
   {
     "id": "17de9275-cc2e-41fc-b383-6e51a227571e",
@@ -159,9 +159,9 @@ const ProductDataJSON = `[
     "optimalLevel": 197,
     "costPrice": 73483,
     "sellingPrice": 99935,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-09T08:00:00Z",
-    "updatedAt": "2025-07-19T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-04-09T08:00:00Z",
+    "updatedAt": "2025-08-19T08:00:00Z"
   },
   {
     "id": "fb3d1967-7d5d-4f6b-961a-69b4d276c46e",
@@ -171,17 +171,16 @@ const ProductDataJSON = `[
     "brand": "Sony",
     "model": "Xperia 10 V",
     "description": "Latest Sony phone model Xperia 10 V with high-end specs.",
-    "totalQuantity": 130,
+    "totalQuantity": 0,
     "totalStock": 0,
     "restockLevel": 10,
     "optimalLevel": 141,
     "costPrice": 89200,
     "sellingPrice": 117322,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-10T08:00:00Z",
-    "updatedAt": "2025-07-20T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-07-10T08:00:00Z",
+    "updatedAt": "2025-08-20T08:00:00Z"
   },
-  
   {
     "id": "8f2a4b5e-3c9d-4e6f-a1b2-c3d4e5f6789a",
     "name": "iPad Pro 12.9",
@@ -196,9 +195,9 @@ const ProductDataJSON = `[
     "optimalLevel": 120,
     "costPrice": 95000,
     "sellingPrice": 125000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-11T08:00:00Z",
-    "updatedAt": "2025-07-21T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-11-11T08:00:00Z",
+    "updatedAt": "2025-08-21T08:00:00Z"
   },
   {
     "id": "7e1b9c8d-2a5f-4d3e-b6c7-a8b9c0d1e2f3",
@@ -214,9 +213,9 @@ const ProductDataJSON = `[
     "optimalLevel": 90,
     "costPrice": 115000,
     "sellingPrice": 155000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-12T08:00:00Z",
-    "updatedAt": "2025-07-22T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-12-12T08:00:00Z",
+    "updatedAt": "2025-08-22T08:00:00Z"
   },
   {
     "id": "6d0c3f2e-1b4a-5d8e-c9f0-d1e2f3a4b5c6",
@@ -232,9 +231,9 @@ const ProductDataJSON = `[
     "optimalLevel": 130,
     "costPrice": 68000,
     "sellingPrice": 92000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-13T08:00:00Z",
-    "updatedAt": "2025-07-23T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2025-03-13T08:00:00Z",
+    "updatedAt": "2025-08-23T08:00:00Z"
   },
   {
     "id": "5c9b2e1f-0a3d-6e7f-b8c9-a0b1c2d3e4f5",
@@ -250,9 +249,9 @@ const ProductDataJSON = `[
     "optimalLevel": 75,
     "costPrice": 125000,
     "sellingPrice": 165000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-14T08:00:00Z",
-    "updatedAt": "2025-07-24T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-01-14T08:00:00Z",
+    "updatedAt": "2025-08-24T08:00:00Z"
   },
   {
     "id": "4b8a1d0e-9c2f-5e6d-a7b8-c9d0e1f2a3b4",
@@ -268,9 +267,9 @@ const ProductDataJSON = `[
     "optimalLevel": 300,
     "costPrice": 18000,
     "sellingPrice": 28000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-15T08:00:00Z",
-    "updatedAt": "2025-07-25T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-05-15T08:00:00Z",
+    "updatedAt": "2025-08-25T08:00:00Z"
   },
   {
     "id": "3a791c0d-8b1e-4d5c-96a7-b8c9d0e1f2a3",
@@ -286,9 +285,9 @@ const ProductDataJSON = `[
     "optimalLevel": 60,
     "costPrice": 142000,
     "sellingPrice": 185000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-16T08:00:00Z",
-    "updatedAt": "2025-07-26T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-06-16T08:00:00Z",
+    "updatedAt": "2025-08-26T08:00:00Z"
   },
   {
     "id": "2968fb0c-7a0d-3c4b-85a6-b7c8d9e0f1a2",
@@ -304,9 +303,9 @@ const ProductDataJSON = `[
     "optimalLevel": 250,
     "costPrice": 12500,
     "sellingPrice": 19500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-17T08:00:00Z",
-    "updatedAt": "2025-07-27T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-07-17T08:00:00Z",
+    "updatedAt": "2025-08-27T08:00:00Z"
   },
   {
     "id": "1857ea0b-691c-2b3a-7459-a6b7c8d9e0f1",
@@ -322,9 +321,9 @@ const ProductDataJSON = `[
     "optimalLevel": 160,
     "costPrice": 75000,
     "sellingPrice": 105000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-18T08:00:00Z",
-    "updatedAt": "2025-07-28T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-08-18T08:00:00Z",
+    "updatedAt": "2025-08-28T08:00:00Z"
   },
   {
     "id": "0746d90a-580b-1a29-6348-95a6b7c8d9e0",
@@ -340,9 +339,9 @@ const ProductDataJSON = `[
     "optimalLevel": 70,
     "costPrice": 135000,
     "sellingPrice": 175000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-19T08:00:00Z",
-    "updatedAt": "2025-07-29T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-09-19T08:00:00Z",
+    "updatedAt": "2025-08-29T08:00:00Z"
   },
   {
     "id": "9635c809-4709-0918-5237-84956a6b7c8d",
@@ -358,8 +357,8 @@ const ProductDataJSON = `[
     "optimalLevel": 280,
     "costPrice": 28000,
     "sellingPrice": 42000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-20T08:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-10-20T08:00:00Z",
     "updatedAt": "2025-07-25T10:30:00Z"
   },
   {
@@ -376,8 +375,8 @@ const ProductDataJSON = `[
     "optimalLevel": 150,
     "costPrice": 32000,
     "sellingPrice": 48000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-21T08:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-11-21T08:00:00Z",
     "updatedAt": "2025-07-26T08:00:00Z"
   },
   {
@@ -388,14 +387,14 @@ const ProductDataJSON = `[
     "brand": "Google",
     "model": "Pixel Tablet",
     "description": "11-inch LCD display, Tensor G2 chip, charging speaker dock included",
-    "totalQuantity": 68,
+    "totalQuantity": 0,
     "totalStock": 0,
     "restockLevel": 14,
     "optimalLevel": 95,
     "costPrice": 52000,
     "sellingPrice": 72000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-22T08:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-12-22T08:00:00Z",
     "updatedAt": "2025-07-27T08:00:00Z"
   },
   {
@@ -412,8 +411,8 @@ const ProductDataJSON = `[
     "optimalLevel": 125,
     "costPrice": 69000,
     "sellingPrice": 95000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-23T08:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2025-01-23T08:00:00Z",
     "updatedAt": "2025-07-28T08:00:00Z"
   },
   {
@@ -430,8 +429,8 @@ const ProductDataJSON = `[
     "optimalLevel": 45,
     "costPrice": 165000,
     "sellingPrice": 215000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-24T08:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2025-02-24T08:00:00Z",
     "updatedAt": "2025-07-29T08:00:00Z"
   },
   {
@@ -448,8 +447,8 @@ const ProductDataJSON = `[
     "optimalLevel": 200,
     "costPrice": 15500,
     "sellingPrice": 24500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-25T08:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2025-03-25T08:00:00Z",
     "updatedAt": "2025-07-29T10:00:00Z"
   },
   {
@@ -466,8 +465,8 @@ const ProductDataJSON = `[
     "optimalLevel": 105,
     "costPrice": 48000,
     "sellingPrice": 68000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-26T08:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-04-26T08:00:00Z",
     "updatedAt": "2025-07-29T11:00:00Z"
   },
   {
@@ -484,8 +483,8 @@ const ProductDataJSON = `[
     "optimalLevel": 140,
     "costPrice": 78500,
     "sellingPrice": 108500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-27T08:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-05-27T08:00:00Z",
     "updatedAt": "2025-07-29T12:00:00Z"
   },
   {
@@ -502,8 +501,8 @@ const ProductDataJSON = `[
     "optimalLevel": 55,
     "costPrice": 148000,
     "sellingPrice": 195000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-28T08:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-06-28T08:00:00Z",
     "updatedAt": "2025-07-29T13:00:00Z"
   },
   {
@@ -520,8 +519,8 @@ const ProductDataJSON = `[
     "optimalLevel": 180,
     "costPrice": 28500,
     "sellingPrice": 42500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T08:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-07-29T08:00:00Z",
     "updatedAt": "2025-07-29T14:00:00Z"
   },
   {
@@ -538,11 +537,10 @@ const ProductDataJSON = `[
     "optimalLevel": 190,
     "costPrice": 58000,
     "sellingPrice": 82000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-08-29T09:00:00Z",
     "updatedAt": "2025-07-29T15:00:00Z"
   },
-  
   {
     "id": "8424069f-2698-7807-5126-628395061728",
     "name": "Realme GT Neo 5",
@@ -557,8 +555,8 @@ const ProductDataJSON = `[
     "optimalLevel": 220,
     "costPrice": 42000,
     "sellingPrice": 62000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-15T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-09-15T09:00:00Z",
     "updatedAt": "2025-07-29T16:00:00Z"
   },
   {
@@ -575,8 +573,8 @@ const ProductDataJSON = `[
     "optimalLevel": 165,
     "costPrice": 71500,
     "sellingPrice": 98500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-16T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-10-16T09:00:00Z",
     "updatedAt": "2025-07-29T17:00:00Z"
   },
   {
@@ -587,14 +585,14 @@ const ProductDataJSON = `[
     "brand": "Honor",
     "model": "Magic5 Pro",
     "description": "6.81-inch OLED display, Snapdragon 8 Gen 2, 50MP triple camera",
-    "totalQuantity": 97,
+    "totalQuantity": 5,
     "totalStock": 0,
     "restockLevel": 17,
-    "optimalLevel": 9,
+    "optimalLevel": 140,
     "costPrice": 68000,
     "sellingPrice": 92000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-17T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-11-17T09:00:00Z",
     "updatedAt": "2025-07-29T18:00:00Z"
   },
   {
@@ -611,8 +609,8 @@ const ProductDataJSON = `[
     "optimalLevel": 200,
     "costPrice": 35000,
     "sellingPrice": 52000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-18T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-12-18T09:00:00Z",
     "updatedAt": "2025-07-29T19:00:00Z"
   },
   {
@@ -629,8 +627,8 @@ const ProductDataJSON = `[
     "optimalLevel": 100,
     "costPrice": 24500,
     "sellingPrice": 38500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-19T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-01-19T09:00:00Z",
     "updatedAt": "2025-07-29T20:00:00Z"
   },
   {
@@ -647,8 +645,8 @@ const ProductDataJSON = `[
     "optimalLevel": 125,
     "costPrice": 18000,
     "sellingPrice": 28000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-20T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-02-20T09:00:00Z",
     "updatedAt": "2025-07-29T21:00:00Z"
   },
   {
@@ -665,8 +663,8 @@ const ProductDataJSON = `[
     "optimalLevel": 105,
     "costPrice": 22000,
     "sellingPrice": 34000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-21T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-03-21T09:00:00Z",
     "updatedAt": "2025-07-29T22:00:00Z"
   },
   {
@@ -683,8 +681,8 @@ const ProductDataJSON = `[
     "optimalLevel": 100,
     "costPrice": 95000,
     "sellingPrice": 135000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-22T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-04-22T09:00:00Z",
     "updatedAt": "2025-07-29T23:00:00Z"
   },
   {
@@ -701,8 +699,8 @@ const ProductDataJSON = `[
     "optimalLevel": 35,
     "costPrice": 115000,
     "sellingPrice": 155000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-23T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-05-23T09:00:00Z",
     "updatedAt": "2025-07-29T08:00:00Z"
   },
   {
@@ -719,8 +717,8 @@ const ProductDataJSON = `[
     "optimalLevel": 30,
     "costPrice": 85000,
     "sellingPrice": 118000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-24T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-06-24T09:00:00Z",
     "updatedAt": "2025-07-29T09:00:00Z"
   },
   {
@@ -737,8 +735,8 @@ const ProductDataJSON = `[
     "optimalLevel": 65,
     "costPrice": 22000,
     "sellingPrice": 35000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-25T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-07-25T09:00:00Z",
     "updatedAt": "2025-07-29T10:00:00Z"
   },
   {
@@ -755,8 +753,8 @@ const ProductDataJSON = `[
     "optimalLevel": 120,
     "costPrice": 16500,
     "sellingPrice": 26500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-26T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-08-26T09:00:00Z",
     "updatedAt": "2025-07-29T11:00:00Z"
   },
   {
@@ -773,8 +771,8 @@ const ProductDataJSON = `[
     "optimalLevel": 55,
     "costPrice": 35000,
     "sellingPrice": 52000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-27T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-09-27T09:00:00Z",
     "updatedAt": "2025-07-29T12:00:00Z"
   },
   {
@@ -791,8 +789,8 @@ const ProductDataJSON = `[
     "optimalLevel": 180,
     "costPrice": 18500,
     "sellingPrice": 28500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-28T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-10-28T09:00:00Z",
     "updatedAt": "2025-07-29T13:00:00Z"
   },
   {
@@ -809,8 +807,8 @@ const ProductDataJSON = `[
     "optimalLevel": 95,
     "costPrice": 28000,
     "sellingPrice": 42000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T09:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-11-29T09:00:00Z",
     "updatedAt": "2025-07-29T14:00:00Z"
   },
   {
@@ -827,8 +825,8 @@ const ProductDataJSON = `[
     "optimalLevel": 400,
     "costPrice": 12000,
     "sellingPrice": 19500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T10:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-12-29T10:00:00Z",
     "updatedAt": "2025-07-29T15:00:00Z"
   },
   {
@@ -845,8 +843,8 @@ const ProductDataJSON = `[
     "optimalLevel": 275,
     "costPrice": 9500,
     "sellingPrice": 16500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T11:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-01-29T11:00:00Z",
     "updatedAt": "2025-07-29T16:00:00Z"
   },
   {
@@ -863,8 +861,8 @@ const ProductDataJSON = `[
     "optimalLevel": 65,
     "costPrice": 32000,
     "sellingPrice": 48000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T12:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-02-29T12:00:00Z",
     "updatedAt": "2025-07-29T17:00:00Z"
   },
   {
@@ -881,8 +879,8 @@ const ProductDataJSON = `[
     "optimalLevel": 98,
     "costPrice": 15500,
     "sellingPrice": 25500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T13:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-03-29T13:00:00Z",
     "updatedAt": "2025-07-29T18:00:00Z"
   },
   {
@@ -899,11 +897,10 @@ const ProductDataJSON = `[
     "optimalLevel": 80,
     "costPrice": 48000,
     "sellingPrice": 68000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T14:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-04-29T14:00:00Z",
     "updatedAt": "2025-07-29T19:00:00Z"
   },
-  
   {
     "id": "6204849d-0498-7777-2906-418395061728",
     "name": "Ulefone Armor 23 Ultra",
@@ -918,8 +915,8 @@ const ProductDataJSON = `[
     "optimalLevel": 65,
     "costPrice": 52000,
     "sellingPrice": 75000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T15:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-05-29T15:00:00Z",
     "updatedAt": "2025-07-29T20:00:00Z"
   },
   {
@@ -936,8 +933,8 @@ const ProductDataJSON = `[
     "optimalLevel": 115,
     "costPrice": 28500,
     "sellingPrice": 42500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T16:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-06-29T16:00:00Z",
     "updatedAt": "2025-07-29T21:00:00Z"
   },
   {
@@ -954,8 +951,8 @@ const ProductDataJSON = `[
     "optimalLevel": 40,
     "costPrice": 18500,
     "sellingPrice": 29500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T17:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-07-29T17:00:00Z",
     "updatedAt": "2025-07-29T22:00:00Z"
   },
   {
@@ -972,8 +969,8 @@ const ProductDataJSON = `[
     "optimalLevel": 50,
     "costPrice": 75000,
     "sellingPrice": 105000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T18:00:00Z",
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-08-29T18:00:00Z",
     "updatedAt": "2025-07-29T23:00:00Z"
   },
   {
@@ -990,9 +987,9 @@ const ProductDataJSON = `[
     "optimalLevel": 85,
     "costPrice": 68000,
     "sellingPrice": 92000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T19:00:00Z",
-    "updatedAt": "2025-07-29T08:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-09-29T19:00:00Z",
+    "updatedAt": "2025-08-22T08:00:00Z"
   },
   {
     "id": "0649304e-4943-2222-7351-873950617283",
@@ -1008,9 +1005,9 @@ const ProductDataJSON = `[
     "optimalLevel": 225,
     "costPrice": 4500,
     "sellingPrice": 8500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T20:00:00Z",
-    "updatedAt": "2025-07-29T09:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-10-29T20:00:00Z",
+    "updatedAt": "2025-08-22T09:00:00Z"
   },
   {
     "id": "9538193d-3832-1111-6240-762839405162",
@@ -1026,9 +1023,9 @@ const ProductDataJSON = `[
     "optimalLevel": 260,
     "costPrice": 8500,
     "sellingPrice": 15500,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T21:00:00Z",
-    "updatedAt": "2025-07-29T10:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-11-29T21:00:00Z",
+    "updatedAt": "2025-08-22T10:00:00Z"
   },
   {
     "id": "8427082c-2731-0000-5129-651728394051",
@@ -1044,9 +1041,9 @@ const ProductDataJSON = `[
     "optimalLevel": 135,
     "costPrice": 16000,
     "sellingPrice": 26000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T22:00:00Z",
-    "updatedAt": "2025-07-29T11:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2024-12-29T22:00:00Z",
+    "updatedAt": "2025-08-22T11:00:00Z"
   },
   {
     "id": "7316971b-1620-9999-4018-540617283940",
@@ -1062,9 +1059,9 @@ const ProductDataJSON = `[
     "optimalLevel": 55,
     "costPrice": 58000,
     "sellingPrice": 82000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T23:00:00Z",
-    "updatedAt": "2025-07-29T12:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2025-01-29T23:00:00Z",
+    "updatedAt": "2025-08-22T12:00:00Z"
   },
   {
     "id": "6205850a-0509-8888-2907-429506172839",
@@ -1080,8 +1077,8 @@ const ProductDataJSON = `[
     "optimalLevel": 100,
     "costPrice": 42000,
     "sellingPrice": 62000,
-    "inventoryId": "ceecbe80-0f0e-4737-a640-f0ead5221976",
-    "createdAt": "2025-07-29T08:00:00Z",
-    "updatedAt": "2025-07-29T13:00:00Z"
+    "inventoryId": "7d3205f0-30cf-40b5-9697-6bb7c9cb3776",
+    "createdAt": "2025-02-01T08:00:00Z",
+    "updatedAt": "2025-08-22T13:00:00Z"
   }
 ]`
