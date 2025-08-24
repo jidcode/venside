@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/app/venside/internal/models"
-	"github.com/app/venside/internal/shared/utils"
 	"github.com/app/venside/pkg/errors"
 	"github.com/app/venside/pkg/logger"
 	"github.com/google/uuid"
@@ -27,16 +25,16 @@ func (c *Controller) GetInventoryStats(ctx echo.Context) error {
 		return errors.ValidationError("Invalid inventory ID")
 	}
 
-	var req models.StatsRequest
-	if err := utils.BindAndValidateRequest(ctx, &req); err != nil {
+	timeRange, err := c.getValidatedTimeRange(ctx)
+	if err != nil {
 		return err
 	}
 
-	stats, err := c.repo.GetInventoryStats(inventoryID, req.TimeRange)
+	stats, err := c.repo.GetInventoryStats(inventoryID, timeRange)
 	if err != nil {
 		return logger.Error(ctx, "Failed to fetch inventory statistics", err, logrus.Fields{
 			"inventory_id": inventoryID,
-			"time_range":   req.TimeRange,
+			"time_range":   timeRange,
 			"details":      err.Error(),
 		})
 	}
@@ -50,16 +48,16 @@ func (c *Controller) GetStockTrend(ctx echo.Context) error {
 		return errors.ValidationError("Invalid inventory ID")
 	}
 
-	var req models.StatsRequest
-	if err := utils.BindAndValidateRequest(ctx, &req); err != nil {
+	timeRange, err := c.getValidatedTimeRange(ctx)
+	if err != nil {
 		return err
 	}
 
-	stockData, err := c.repo.GetStockTrend(inventoryID, req.TimeRange)
+	stockData, err := c.repo.GetStockTrend(inventoryID, timeRange)
 	if err != nil {
 		return logger.Error(ctx, "Failed to fetch stock trend data", err, logrus.Fields{
 			"inventory_id": inventoryID,
-			"time_range":   req.TimeRange,
+			"time_range":   timeRange,
 			"details":      err.Error(),
 		})
 	}
@@ -73,16 +71,16 @@ func (c *Controller) GetSalesTrend(ctx echo.Context) error {
 		return errors.ValidationError("Invalid inventory ID")
 	}
 
-	var req models.StatsRequest
-	if err := utils.BindAndValidateRequest(ctx, &req); err != nil {
+	timeRange, err := c.getValidatedTimeRange(ctx)
+	if err != nil {
 		return err
 	}
 
-	salesData, err := c.repo.GetSalesTrend(inventoryID, req.TimeRange)
+	salesData, err := c.repo.GetSalesTrend(inventoryID, timeRange)
 	if err != nil {
 		return logger.Error(ctx, "Failed to fetch sales trend data", err, logrus.Fields{
 			"inventory_id": inventoryID,
-			"time_range":   req.TimeRange,
+			"time_range":   timeRange,
 			"details":      err.Error(),
 		})
 	}
@@ -96,23 +94,14 @@ func (c *Controller) GetBestSellingProducts(ctx echo.Context) error {
 		return errors.ValidationError("Invalid inventory ID")
 	}
 
-	// Get time range from query parameter (default to 1 month)
-	timeRange := ctx.QueryParam("timeRange")
-	if timeRange == "" {
-		timeRange = "1M"
+	timeRange, err := c.getValidatedTimeRange(ctx)
+	if err != nil {
+		return err
 	}
 
-	// Get limit from query parameter (default to 10)
-	limitStr := ctx.QueryParam("limit")
-	limit := 10
-	if limitStr != "" {
-		limit, err = strconv.Atoi(limitStr)
-		if err != nil || limit <= 0 {
-			return errors.ValidationError("Limit must be a positive integer")
-		}
-		if limit > 100 {
-			limit = 100 // Cap at 100 for safety
-		}
+	limit, err := c.getValidatedLimit(ctx)
+	if err != nil {
+		return err
 	}
 
 	products, err := c.repo.GetBestSellingProducts(inventoryID, timeRange, limit)
@@ -134,17 +123,9 @@ func (c *Controller) GetRecentSales(ctx echo.Context) error {
 		return errors.ValidationError("Invalid inventory ID")
 	}
 
-	// Get limit from query parameter (default to 10)
-	limitStr := ctx.QueryParam("limit")
-	limit := 10
-	if limitStr != "" {
-		limit, err = strconv.Atoi(limitStr)
-		if err != nil || limit <= 0 {
-			return errors.ValidationError("Limit must be a positive integer")
-		}
-		if limit > 100 {
-			limit = 100 // Cap at 100 for safety
-		}
+	limit, err := c.getValidatedLimit(ctx)
+	if err != nil {
+		return err
 	}
 
 	sales, err := c.repo.GetRecentSales(inventoryID, limit)
@@ -157,4 +138,38 @@ func (c *Controller) GetRecentSales(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, sales)
+}
+
+// HELPER METHODS
+
+func (c *Controller) getValidatedTimeRange(ctx echo.Context) (string, error) {
+	timeRange := ctx.QueryParam("timeRange")
+	if timeRange == "" {
+		timeRange = "1M"
+	}
+
+	// Validate time range
+	validTimeRanges := map[string]bool{"1W": true, "1M": true, "3M": true, "6M": true, "1Y": true, "5Y": true, "MAX": true}
+	if !validTimeRanges[timeRange] {
+		return "", errors.ValidationError("Invalid time range. Must be one of: 1W, 1M, 3M, 6M, 1Y, 5Y, MAX")
+	}
+
+	return timeRange, nil
+}
+
+func (c *Controller) getValidatedLimit(ctx echo.Context) (int, error) {
+	limitStr := ctx.QueryParam("limit")
+	limit := 10
+	if limitStr != "" {
+		var err error
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil || limit <= 0 {
+			return 0, errors.ValidationError("Limit must be a positive integer")
+		}
+		if limit > 100 {
+			limit = 100 // Cap at 100
+		}
+	}
+
+	return limit, nil
 }

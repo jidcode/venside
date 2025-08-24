@@ -2,61 +2,63 @@ import { LucideIcon } from "lucide-react";
 
 export interface StatCardProps {
   title: string;
-  value: string | number;
+  value: any;
   icon: LucideIcon;
   trend?: string;
   color?: "blue" | "green" | "purple" | "orange" | "red" | "indigo";
 }
 
-export interface StatsComponentProps {
+export interface InventoryStats {
   totalStockQuantity: number;
-  totalInventoryValue: number;
-  totalTransactions: number;
-  netSales: number;
-  grossSales: number;
-  topProductSales: number;
-  formatCurrency: (value: number) => string;
-  formatNumber: (value: number) => string;
+  totalInventoryValue: number | undefined;
+  grossSalesRevenue: number;
+  netProfit: number;
+  startDate: string;
+  endDate: string;
 }
 
-export interface StockData {
+interface StockData {
   month: string;
   quantity: number;
 }
 
-export interface SalesData {
+export interface StockTrend {
+  startDate: string;
+  endDate: string;
+  stockData: StockData[];
+}
+
+interface SalesData {
   month: string;
-  net: number;
-  gross: number;
+  revenue: number;
+  profit: number;
 }
 
-export interface Product {
-  name: string;
-  sales: number;
-  value: number;
-  color: string;
+export interface SalesTrend {
+  startDate: string;
+  endDate: string;
+  salesData: SalesData[];
 }
 
-export interface TransactionData {
-  day: string;
-  count: number;
+interface BestSellingProduct {
+  productId: string;
+  productName: string;
+  totalSold: number;
+  revenue: number;
+  imageUrl: string;
 }
 
-export interface Sale {
-  customer: string;
-  product: string;
-  amount: number;
-  status: "completed" | "pending" | "processing";
-  paymentMethod: "credit_card" | "cash";
-  time: string;
+export interface BestSellers {
+  startDate: string;
+  endDate: string;
+  bestSellers: BestSellingProduct[];
 }
 
-export interface ChartsComponentProps {
-  stockTrend: StockData[];
-  salesTrend: SalesData[];
-  bestSellingProducts: Product[];
-  transactionData: TransactionData[];
-  recentSales: Sale[];
-  formatCurrency: (value: number) => string;
-  formatNumber: (value: number) => string;
+export interface RecentSale {
+  saleId: string;
+  saleNumber: string;
+  customerName: string;
+  totalAmount: number;
+  paymentStatus: string;
+  saleDate: string;
 }

@@ -1,68 +1,53 @@
-import {
-  TrendingUp,
-  Package,
-  DollarSign,
-  ShoppingCart,
-  Activity,
-  Star,
-} from "lucide-react";
-import { StatCardProps, StatsComponentProps } from "./interfaces";
+import { TrendingUp, Package, DollarSign, ShoppingCart } from "lucide-react";
+import { StatCardProps } from "./interfaces";
+import { useInventoryStats } from "../_components/get-stats";
+import useCurrencyFormat from "@/core/hooks/use-currency";
 
 // Main Stats Component
-export default function StatsComponent({
-  totalStockQuantity,
-  totalInventoryValue,
-  totalTransactions,
-  netSales,
-  grossSales,
-  topProductSales,
-  formatCurrency,
-  formatNumber,
-}: StatsComponentProps) {
+export default function StatsComponent() {
+  const format = useCurrencyFormat();
+  const { data: stats, error } = useInventoryStats();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       <StatCard
         title="Total Stock Quantity"
-        value={formatNumber(totalStockQuantity)}
+        value={stats?.totalStockQuantity}
         icon={Package}
         trend="+5.2%"
         color="blue"
       />
+
       <StatCard
         title="Total Inventory Value"
-        value={formatCurrency(totalInventoryValue)}
+        value={
+          stats?.totalInventoryValue
+            ? format(stats?.totalInventoryValue / 100)
+            : 0.0
+        }
         icon={DollarSign}
         trend="+12.3%"
         color="green"
       />
+
       <StatCard
-        title="Total Transactions"
-        value={formatNumber(totalTransactions)}
-        icon={Activity}
-        trend="+8.7%"
-        color="purple"
-      />
-      <StatCard
-        title="Net Sales"
-        value={formatCurrency(netSales)}
+        title="Gross Sales Revenue"
+        value={
+          stats?.grossSalesRevenue
+            ? format(stats?.grossSalesRevenue / 100)
+            : 0.0
+        }
         icon={TrendingUp}
         trend="+15.4%"
         color="indigo"
       />
-      <StatCard
-        title="Gross Sales"
-        value={formatCurrency(grossSales)}
+      {/* <StatCard
+        title="Net Profit"
+        value={stats?.netProfit ? format(stats?.netProfit / 100) : 0.0}
         icon={ShoppingCart}
         trend="+11.2%"
         color="orange"
-      />
-      <StatCard
-        title="Top Product Sales"
-        value={formatNumber(topProductSales)}
-        icon={Star}
-        trend="+22.1%"
-        color="red"
-      />
+      /> */}
     </div>
   );
 }

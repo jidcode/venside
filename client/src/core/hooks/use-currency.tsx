@@ -20,8 +20,8 @@ export function formatCurrency(
     code?: string;
   }
 ): string {
-  const locale = currencyConfig?.locale || "en-GH";
-  const currency = currencyConfig?.code || "GHS";
+  const locale = currencyConfig?.locale || "en-US";
+  const currency = currencyConfig?.code || "USD";
 
   return new Intl.NumberFormat(locale, {
     style: "currency",
